@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}固件制品{% endblock %}
+{% block page_title %}固件制品管理{% endblock %}
+
+{% block content %}
+{% if message %}
+  {% if msg_type == 'success' %}
+  <div class="alert alert-success" id="artifact-message">
+    <span>✓</span> {{ message }}
+  </div>
+  {% else %}
+  <div class="alert alert-error" id="artifact-message">
+    <span>✗</span> {{ message }}
+  </div>
+  {% endif %}
+{% endif %}
+
+<div class="form-card">
+  <div class="form-title">登记固件制品</div>
+  <form method="POST" action="/artifacts">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" for="artifact-filename">固件文件名</label>
+        <input class="form-control" type="text" id="artifact-filename" name="filename"
+               placeholder="cpe_gateway_v1.2.3.bin" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="artifact-source-type">来源类型</label>
+        <select class="form-control" id="artifact-source-type" name="source_type" required>
+          <option value="local">本地</option>
+          <option value="ci">CI 构建</option>
+          <option value="manual">手动上传</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="artifact-source-ref">来源引用</label>
+        <input class="form-control" type="text" id="artifact-source-ref" name="source_ref"
+               placeholder="commit id 或 build id">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="artifact-path">本地路径</label>
+        <input class="form-control" type="text" id="artifact-path" name="local_path"
+               placeholder="/opt/firmware/...">
+      </div>
+      <div class="form-group full">
+        <label class="form-label" for="artifact-note">备注</label>
+        <input class="form-control" type="text" id="artifact-note" name="note"
+               placeholder="可选备注">
+      </div>
+    </div>
+    <button class="btn btn-primary mt-24" type="submit" id="register-artifact-button">
+      登 记 制 品
+    </button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="card-title">已登记制品列表</div>
+  <div class="table-wrap">
+    <table id="artifact-table">
+      <thead>
+        <tr>
+          <th>文件名</th>
+          <th>版本</th>
+          <th>来源类型</th>
+          <th>文件大小</th>
+          <th>MD5</th>
+          <th>创建时间</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for art in artifact_list %}
+        <tr>
+          <td>{{ art.filename }}</td>
+          <td>v{{ art.version }}</td>
+          <td><span class="badge badge-info">{{ art.source_type }}</span></td>
+          <td>{{ (art.size_bytes / 1024 / 1024) | round(1) }} MB</td>
+          <td class="text-mono truncate">{{ art.md5[:12] }}...</td>
+          <td class="text-mono">{{ art.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" style="text-align: center; color: #999;">暂无制品</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

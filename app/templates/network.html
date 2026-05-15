@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}网络配置{% endblock %}
+{% block page_title %}网络配置{% endblock %}
+
+{% block content %}
+{% if message %}
+<div class="alert alert-success" id="network-message">
+  <span>✓</span> {{ message }}
+</div>
+{% endif %}
+
+<div class="form-card">
+  <div class="form-title">Wi-Fi 基本设置</div>
+  <form method="POST" action="/network">
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" for="ssid">SSID</label>
+        <input class="form-control" type="text" id="ssid" name="ssid"
+               value="{{ net.ssid }}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="wifi-password">Wi-Fi 密码</label>
+        <input class="form-control" type="text" id="wifi-password" name="wifi_password"
+               value="{{ net.wifi_password }}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="mode">联网模式</label>
+        <select class="form-control" id="mode" name="mode" required>
+          <option value="dhcp" {% if net.mode=='dhcp' %}selected{% endif %}>DHCP</option>
+          <option value="pppoe" {% if net.mode=='pppoe' %}selected{% endif %}>PPPoE</option>
+          <option value="static" {% if net.mode=='static' %}selected{% endif %}>静态 IP</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="channel">Wi-Fi 信道</label>
+        <select class="form-control" id="channel" name="channel" required>
+          <option value="1" {% if net.channel=='1' %}selected{% endif %}>1 (2.4GHz)</option>
+          <option value="6" {% if net.channel=='6' %}selected{% endif %}>6 (2.4GHz)</option>
+          <option value="11" {% if net.channel=='11' %}selected{% endif %}>11 (2.4GHz)</option>
+          <option value="36" {% if net.channel=='36' %}selected{% endif %}>36 (5GHz)</option>
+          <option value="40" {% if net.channel=='40' %}selected{% endif %}>40 (5GHz)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid mt-24" style="grid-template-columns: 1fr;">
+      <div class="check-row">
+        <input type="checkbox" id="guest-wifi" name="guest_wifi" value="on"
+               {% if net.guest_wifi %}checked{% endif %}>
+        <label for="guest-wifi">启用访客 Wi-Fi</label>
+      </div>
+    </div>
+
+    <button class="btn btn-primary mt-24" type="submit" id="save-network-button">
+      保 存 配 置
+    </button>
+  </form>
+</div>
+{% endblock %}

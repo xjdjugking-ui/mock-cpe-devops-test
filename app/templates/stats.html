@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}实验统计{% endblock %}
+{% block page_title %}实验统计与分析{% endblock %}
+
+{% block content %}
+<!-- 统计概览 -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="card-title">总运行数</div>
+    <div class="card-value" id="total-runs">{{ summary.total }}</div>
+  </div>
+  <div class="stat-card success">
+    <div class="card-title">通过数</div>
+    <div class="card-value" id="passed-runs">{{ summary.passed }}</div>
+  </div>
+  <div class="stat-card danger">
+    <div class="card-title">失败数</div>
+    <div class="card-value" id="failed-runs">{{ summary.failed }}</div>
+  </div>
+  <div class="stat-card info">
+    <div class="card-title">通过率</div>
+    <div class="card-value" id="pass-rate">{{ summary.pass_rate }}%</div>
+    <div class="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" style="width: {{ summary.pass_rate }}%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 覆盖率、Flaky 率、平均耗时 -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="card-title">覆盖率</div>
+    <div class="card-value" id="coverage">{{ summary.coverage }}%</div>
+    <div class="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill ok" style="width: {{ summary.coverage }}%"></div>
+      </div>
+    </div>
+  </div>
+  <div class="stat-card warning">
+    <div class="card-title">Flaky 率</div>
+    <div class="card-value" id="flaky-rate">{{ summary.flaky_rate }}%</div>
+  </div>
+  <div class="stat-card">
+    <div class="card-title">平均耗时</div>
+    <div class="card-value" id="avg-duration">{{ summary.avg_duration }}s</div>
+  </div>
+  <div class="stat-card danger">
+    <div class="card-title" id="stats-title">最近失败原因</div>
+    <div class="card-value" style="font-size: 12px; word-break: break-word;" id="last-failure-reason">
+      {{ summary.last_failure_reason }}
+    </div>
+  </div>
+</div>
+
+<!-- 实验记录表 -->
+<div class="card">
+  <div class="card-title">最近实验记录</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>实验 ID</th>
+          <th>任务 ID</th>
+          <th>覆盖率</th>
+          <th>通过率</th>
+          <th>Flaky 率</th>
+          <th>耗时(s)</th>
+          <th>失败原因</th>
+          <th>创建时间</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exp in experiments %}
+        <tr>
+          <td class="text-mono">{{ exp.id }}</td>
+          <td class="text-mono">{{ exp.job_id }}</td>
+          <td>{{ (exp.coverage * 100) | round(1) }}%</td>
+          <td>
+            {% if exp.pass_rate >= 0.9 %}
+            <span class="badge badge-success">{{ (exp.pass_rate * 100) | round(0) }}%</span>
+            {% elif exp.pass_rate >= 0.7 %}
+            <span class="badge badge-warning">{{ (exp.pass_rate * 100) | round(0) }}%</span>
+            {% else %}
+            <span class="badge badge-danger">{{ (exp.pass_rate * 100) | round(0) }}%</span>
+            {% endif %}
+          </td>
+          <td>{{ (exp.flaky_rate * 100) | round(1) }}%</td>
+          <td>{{ exp.duration_seconds }}</td>
+          <td>{{ exp.failure_reason or '—' }}</td>
+          <td class="text-mono">{{ exp.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" style="text-align: center; color: #999;">暂无实验记录</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

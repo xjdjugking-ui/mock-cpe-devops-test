@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}升级任务{% endblock %}
+{% block page_title %}升级任务执行{% endblock %}
+
+{% block content %}
+{% if message %}
+  {% if msg_type == 'success' %}
+  <div class="alert alert-success" id="job-message">
+    <span>✓</span> {{ message }}
+  </div>
+  {% else %}
+  <div class="alert alert-error" id="job-message">
+    <span>✗</span> {{ message }}
+  </div>
+  {% endif %}
+{% endif %}
+
+<div class="form-card">
+  <div class="form-title">执行升级任务</div>
+  <form method="POST" action="/jobs">
+    <div class="form-grid">
+      <div class="form-group full">
+        <label class="form-label" for="artifact-select">选择制品</label>
+        <select class="form-control" id="artifact-select" name="artifact-select" required>
+          <option value="">请选择一个固件制品</option>
+          {% for art in artifact_list %}
+          <option value="{{ art.id }}">
+            {{ art.filename }} (v{{ art.version }}, {{ (art.size_bytes / 1024 / 1024) | round(1) }} MB)
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-success mt-24" type="submit" id="run-upgrade-job-button">
+      执 行 升 级 任 务
+    </button>
+  </form>
+</div>
+
+{% if job_result %}
+<div class="card mt-24">
+  <div class="card-title">任务执行结果</div>
+  <div style="padding: 16px 0;">
+    <div class="flex-between mb-16">
+      <span class="text-secondary">状态</span>
+      <span>
+        {% if job_result.ok %}
+        <span class="badge badge-success" id="job-status">PASSED</span>
+        {% else %}
+        <span class="badge badge-danger" id="job-status">FAILED</span>
+        {% endif %}
+      </span>
+    </div>
+    <div class="flex-between mb-16">
+      <span class="text-secondary">耗时</span>
+      <span>{{ job_result.duration }} 秒</span>
+    </div>
+    <div class="flex-between">
+      <span class="text-secondary">任务 ID</span>
+      <span class="text-mono">{{ job_result.job_id }}</span>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card mt-24">
+  <div class="card-title">最近任务记录</div>
+  <div class="table-wrap">
+    <table id="jobs-table">
+      <thead>
+        <tr>
+          <th>任务 ID</th>
+          <th>目标版本</th>
+          <th>状态</th>
+          <th>上传</th>
+          <th>触发</th>
+          <th>回连</th>
+          <th>API 检查</th>
+          <th>Web 检查</th>
+          <th>耗时(s)</th>
+          <th>创建时间</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in jobs_list %}
+        <tr>
+          <td class="text-mono">{{ job.id }}</td>
+          <td>v{{ job.target_version }}</td>
+          <td>
+            {% if job.status == 'passed' %}
+            <span class="badge badge-success">PASSED</span>
+            {% else %}
+            <span class="badge badge-danger">FAILED</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if job.upload_ok %}<span class="badge badge-success">✓</span>{% else %}<span class="badge badge-danger">✗</span>{% endif %}
+          </td>
+          <td>
+            {% if job.trigger_ok %}<span class="badge badge-success">✓</span>{% else %}<span class="badge badge-danger">✗</span>{% endif %}
+          </td>
+          <td>
+            {% if job.online_ok %}<span class="badge badge-success">✓</span>{% else %}<span class="badge badge-danger">✗</span>{% endif %}
+          </td>
+          <td>
+            {% if job.api_check %}<span class="badge badge-success">✓</span>{% else %}<span class="badge badge-danger">✗</span>{% endif %}
+          </td>
+          <td>
+            {% if job.web_check %}<span class="badge badge-success">✓</span>{% else %}<span class="badge badge-danger">✗</span>{% endif %}
+          </td>
+          <td>{{ job.duration_seconds }}</td>
+          <td class="text-mono">{{ job.created_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="10" style="text-align: center; color: #999;">暂无任务</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

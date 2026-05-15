@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}控制台{% endblock %}
+{% block page_title %}控制台{% endblock %}
+
+{% block content %}
+<div class="welcome-banner" id="welcome-banner">
+  <div class="welcome-text">
+    <h2>欢迎回来，admin</h2>
+    <p>CPE-GW-X300 智能网关运行状态良好</p>
+  </div>
+  <div class="welcome-meta">
+    最后更新：刚刚
+  </div>
+</div>
+
+<!-- 关键指标 -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="card-title">设备模型</div>
+    <div class="card-value">{{ model }}</div>
+  </div>
+  <div class="stat-card success">
+    <div class="card-title">固件版本</div>
+    <div class="card-value" id="firmware-version">{{ firmware_version }}</div>
+  </div>
+  <div class="stat-card success">
+    <div class="card-title">WAN 状态</div>
+    <div class="card-value" id="wan-status">{{ wan_status }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="card-title">运行时间</div>
+    <div class="card-value" id="uptime">{{ uptime }}</div>
+  </div>
+</div>
+
+<!-- 系统资源 -->
+<div class="stat-grid">
+  <div class="stat-card warning">
+    <div class="card-title">CPU 使用率</div>
+    <div class="card-value" id="cpu-usage">{{ cpu_usage }}%</div>
+    <div class="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" style="width: {{ cpu_usage }}%"></div>
+      </div>
+    </div>
+  </div>
+  <div class="stat-card warning">
+    <div class="card-title">内存使用率</div>
+    <div class="card-value" id="memory-usage">{{ memory_usage }}%</div>
+    <div class="progress-wrap">
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" style="width: {{ memory_usage }}%"></div>
+      </div>
+    </div>
+  </div>
+  <div class="stat-card info">
+    <div class="card-title">在线终端数</div>
+    <div class="card-value" id="client-count">{{ client_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="card-title">最近升级</div>
+    <div class="card-value">{{ last_upgrade_status }}</div>
+    <div class="card-sub">{{ last_upgrade_version or '—' }}</div>
+  </div>
+</div>
+
+<!-- 在线终端 -->
+<div class="card mb-24">
+  <div class="card-title">在线终端列表</div>
+  <div class="table-wrap">
+    <table id="dashboard-title">
+      <thead>
+        <tr>
+          <th>设备名称</th>
+          <th>IP 地址</th>
+          <th>频段</th>
+          <th>信号强度</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for client in clients %}
+        <tr>
+          <td>{{ client.name }}</td>
+          <td class="text-mono">{{ client.ip }}</td>
+          <td>{{ client.band }}</td>
+          <td>
+            <div class="progress-bar-bg" style="width: 80px;">
+              <div class="progress-bar-fill" style="width: {{ client.quality }}%"></div>
+            </div>
+            <span class="text-muted">{{ client.quality }}%</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 最近活动 -->
+<div class="card">
+  <div class="card-title">最近活动记录</div>
+  <div class="table-wrap">
+    <table id="activity-table">
+      <thead>
+        <tr>
+          <th>时间</th>
+          <th>事件</th>
+          <th>详情</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for act in activities %}
+        <tr>
+          <td class="text-mono">{{ act.time }}</td>
+          <td><span class="badge badge-info">{{ act.event }}</span></td>
+          <td>{{ act.detail }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" style="text-align: center; color: #999;">暂无活动记录</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

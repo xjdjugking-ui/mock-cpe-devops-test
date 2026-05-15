@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}运行诊断{% endblock %}
+{% block page_title %}运行诊断{% endblock %}
+
+{% block content %}
+{% if message %}
+<div class="alert alert-success" id="diagnostics-message">
+  <span>✓</span> {{ message }}
+</div>
+{% endif %}
+
+<form method="POST" action="/diagnostics" style="margin-bottom: 24px;">
+  <button class="btn btn-primary" type="submit" id="refresh-diagnostics-button">
+    刷 新 诊 断
+  </button>
+</form>
+
+<div class="card" id="diagnostics-title">
+  <div class="card-title">诊断结果</div>
+
+  <div class="diag-grid">
+    <div class="diag-card">
+      <div class="diag-icon">🔵</div>
+      <div class="diag-label">Ping 检查</div>
+      <div class="diag-value diag-ok" id="ping-status">
+        {% if diag.ping == 'ok' %}✓ OK{% else %}✗ FAIL{% endif %}
+      </div>
+    </div>
+
+    <div class="diag-card">
+      <div class="diag-icon">🔷</div>
+      <div class="diag-label">DNS 检查</div>
+      <div class="diag-value diag-ok" id="dns-status">
+        {% if diag.dns == 'ok' %}✓ OK{% else %}✗ FAIL{% endif %}
+      </div>
+    </div>
+
+    <div class="diag-card">
+      <div class="diag-icon">☁</div>
+      <div class="diag-label">云端连通性</div>
+      <div class="diag-value diag-ok" id="cloud-status">
+        {% if diag.cloud == 'ok' %}✓ OK{% else %}✗ FAIL{% endif %}
+      </div>
+    </div>
+
+    <div class="diag-card">
+      <div class="diag-icon">📊</div>
+      <div class="diag-label">丢包率</div>
+      <div class="diag-value" id="packet-loss">{{ diag.packet_loss }}%</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

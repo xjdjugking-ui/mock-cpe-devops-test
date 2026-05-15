@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}固件升级{% endblock %}
+{% block page_title %}固件升级校验{% endblock %}
+
+{% block content %}
+{% if result %}
+  {% if result.status == 'validated' %}
+  <div class="alert alert-success" id="upgrade-message">
+    <span>✓</span> {{ result.message }}
+  </div>
+  {% else %}
+  <div class="alert alert-error" id="upgrade-message">
+    <span>✗</span> {{ result.message }}
+  </div>
+  {% endif %}
+{% endif %}
+
+<div class="form-card">
+  <div class="form-title">固件文件校验</div>
+  <form method="POST" action="/upgrade">
+    <div class="form-grid">
+      <div class="form-group full">
+        <label class="form-label" for="firmware-filename">固件文件名</label>
+        <input class="form-control" type="text" id="firmware-filename" name="firmware-filename"
+               placeholder="示例：cpe_gateway_v1.2.3.bin" required>
+        <div class="form-hint">合法格式：cpe_gateway_vX.Y.Z.bin（X、Y、Z 为数字）</div>
+      </div>
+    </div>
+    <button class="btn btn-primary mt-24" type="submit" id="validate-firmware-button">
+      校 验 固 件
+    </button>
+  </form>
+</div>
+
+{% if result %}
+<div class="card mt-24">
+  <div class="card-title">校验结果</div>
+  <div style="padding: 14px 0;">
+    <div class="flex-between mb-16">
+      <span class="text-secondary">状态</span>
+      <span>
+        {% if result.status == 'validated' %}
+        <span class="badge badge-success" id="upgrade-status">已验证</span>
+        {% else %}
+        <span class="badge badge-danger" id="upgrade-status">已拒绝</span>
+        {% endif %}
+      </span>
+    </div>
+    {% if result.version %}
+    <div class="flex-between">
+      <span class="text-secondary">版本号</span>
+      <span class="text-mono">v{{ result.version }}</span>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

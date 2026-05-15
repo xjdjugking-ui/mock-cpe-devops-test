@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 — CPE Gateway Management Console</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="login-page">
+  <div class="login-box">
+
+    <div class="login-logo">
+      <div class="login-logo-icon">G</div>
+      <div class="login-logo-title">CPE Gateway Console</div>
+      <div class="login-logo-sub">智能网关 Web 管理平台</div>
+    </div>
+
+    {% if error %}
+    <div class="login-error" id="login-error">
+      <span>⚠</span> {{ error }}
+    </div>
+    {% else %}
+    <div id="login-error" style="display:none;"></div>
+    {% endif %}
+
+    <form method="POST" action="/login" class="login-form">
+      <div class="form-group">
+        <label class="form-label" for="username">用户名</label>
+        <input class="form-control" type="text" id="username" name="username"
+               placeholder="请输入用户名" autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">密码</label>
+        <input class="form-control" type="password" id="password" name="password"
+               placeholder="请输入密码" autocomplete="current-password" required>
+      </div>
+      <button class="btn btn-primary btn-lg login-btn" type="submit" id="login-button">
+        登 录
+      </button>
+    </form>
+
+    <div class="login-footer">
+      CPE-GW-X300 &nbsp;·&nbsp; DevOps 持续交付测试平台 &nbsp;·&nbsp; Mock v1.0
+    </div>
+  </div>
+</div>
+</body>
+</html>
