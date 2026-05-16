@@ -1,3 +1,4 @@
+from selenium.webdriver.common.by import By
 from cpe_devops.base_page import BasePage
 
 
@@ -13,6 +14,8 @@ class ArtifactsPage(BasePage):
         self._fill("artifact-path", path)
         self._fill("artifact-note", note)
         self._click("register-artifact-button")
+        # Wait for form submission to complete before navigating away
+        self._find_visible(By.ID, "artifact-message", timeout=20)
 
     def message(self) -> str:
         try:

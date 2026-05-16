@@ -1,20 +1,19 @@
-// Jenkinsfile — Mock CPE DevOps Continuous Delivery Pipeline
+// Jenkinsfile — Mock CPE DevOps CI/CD Pipeline (Docker-based)
 // Thesis: 面向 DevOps 持续交付的智能网关 Web 自动化测试设计与实施
 //
-// Prerequisites (configure on Jenkins node):
-//   - Python 3.10+ installed and on PATH
-//   - Google Chrome + ChromeDriver installed and on PATH
+// Prerequisites:
+//   - Jenkins node with Docker + Docker Compose installed
 //   - Allure Jenkins Plugin installed
-//   - No Docker required
-//   - No real CPE hardware required (MockDeviceAdapter used throughout)
+//   - No real CPE hardware required (MockDeviceAdapter used)
+//   - No local Python/ChromeDriver needed (everything runs in Docker)
 
 pipeline {
     agent any
 
     environment {
-        PYTHON   = 'C:\\Users\\LPC\\AppData\\Local\\Programs\\Python\\Python39\\python.exe'
-        VENV_DIR = '.venv'
-        HEADLESS = '1'
+        COMPOSE_FILE = 'docker-compose.yml'
+        // Allure results aggregated into workspace for Jenkins plugin
+        ALLURE_RESULTS_DIR = 'allure-results'
     }
 
     stages {
@@ -26,44 +25,31 @@ pipeline {
             }
         }
 
-        stage('Setup Python') {
+        stage('Build Docker Images') {
             steps {
                 script {
                     if (isUnix()) {
-                        sh "${PYTHON} -m venv ${VENV_DIR}"
+                        sh 'docker compose build --no-cache'
                     } else {
-                        bat "\"${PYTHON}\" -m venv ${VENV_DIR}"
+                        bat 'docker compose build --no-cache'
                     }
                 }
+                echo "Docker images built: mock-cpe + test-runner"
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Start Services') {
             steps {
                 script {
                     if (isUnix()) {
-                        sh "${VENV_DIR}/bin/pip install --upgrade pip"
-                        sh "${VENV_DIR}/bin/pip install -r requirements.txt"
+                        sh 'docker compose up -d mock-cpe selenium'
                     } else {
-                        bat "${VENV_DIR}\\Scripts\\pip install --upgrade pip"
-                        bat "${VENV_DIR}\\Scripts\\pip install -r requirements.txt"
+                        bat 'docker compose up -d mock-cpe selenium'
                     }
                 }
-            }
-        }
-
-        stage('Start Mock CPE') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh "nohup ${VENV_DIR}/bin/python run.py > server.log 2>&1 &"
-                        sh "sleep 3"
-                    } else {
-                        bat "start /B ${VENV_DIR}\\Scripts\\python run.py > server.log 2>&1"
-                        bat "timeout /T 5 /NOBREAK"
-                    }
-                }
-                echo "Mock CPE Flask server started on http://127.0.0.1:5000"
+                // Give services time to be ready
+                sleep 10
+                echo "Mock CPE + Selenium Chrome services running"
             }
         }
 
@@ -71,9 +57,13 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh "${VENV_DIR}/bin/pytest tests/unit -v --tb=short --alluredir=allure-results/unit --json-report --json-report-file=reports/unit_report.json || true"
+                        sh '''docker compose run --rm \
+                            -e PYTEST_ARGS="tests/unit -v --tb=short --alluredir=/app/allure-results/unit --json-report --json-report-file=/app/reports/unit_report.json" \
+                            test-runner'''
                     } else {
-                        bat returnStatus: true, script: "${VENV_DIR}\\Scripts\\pytest tests/unit -v --tb=short --alluredir=allure-results/unit --json-report --json-report-file=reports/unit_report.json"
+                        bat '''docker compose run --rm ^
+                            -e PYTEST_ARGS="tests/unit -v --tb=short --alluredir=/app/allure-results/unit --json-report --json-report-file=/app/reports/unit_report.json" ^
+                            test-runner'''
                     }
                 }
             }
@@ -83,9 +73,13 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh "${VENV_DIR}/bin/pytest tests/api -v --tb=short --alluredir=allure-results/api --json-report --json-report-file=reports/api_report.json || true"
+                        sh '''docker compose run --rm \
+                            -e PYTEST_ARGS="tests/api -v --tb=short --alluredir=/app/allure-results/api --json-report --json-report-file=/app/reports/api_report.json" \
+                            test-runner'''
                     } else {
-                        bat returnStatus: true, script: "${VENV_DIR}\\Scripts\\pytest tests/api -v --tb=short --alluredir=allure-results/api --json-report --json-report-file=reports/api_report.json"
+                        bat '''docker compose run --rm ^
+                            -e PYTEST_ARGS="tests/api -v --tb=short --alluredir=/app/allure-results/api --json-report --json-report-file=/app/reports/api_report.json" ^
+                            test-runner'''
                     }
                 }
             }
@@ -95,9 +89,13 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh "HEADLESS=1 ${VENV_DIR}/bin/pytest tests/ui -v --tb=short --alluredir=allure-results/ui --json-report --json-report-file=reports/ui_report.json || true"
+                        sh '''docker compose run --rm \
+                            -e PYTEST_ARGS="tests/ui -v --tb=short --alluredir=/app/allure-results/ui --json-report --json-report-file=/app/reports/ui_report.json" \
+                            test-runner'''
                     } else {
-                        bat returnStatus: true, script: "set HEADLESS=1 && ${VENV_DIR}\\Scripts\\pytest tests/ui -v --tb=short --alluredir=allure-results/ui --json-report --json-report-file=reports/ui_report.json"
+                        bat '''docker compose run --rm ^
+                            -e PYTEST_ARGS="tests/ui -v --tb=short --alluredir=/app/allure-results/ui --json-report --json-report-file=/app/reports/ui_report.json" ^
+                            test-runner'''
                     }
                 }
             }
@@ -107,29 +105,21 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh "${VENV_DIR}/bin/pytest tests/unit tests/api --cov=app --cov=cpe_devops --cov-report=term-missing --cov-report=xml:reports/coverage.xml || true"
+                        sh '''docker compose run --rm \
+                            -e PYTEST_ARGS="tests/unit tests/api --cov=app --cov=cpe_devops --cov-report=term-missing --cov-report=xml:/app/reports/coverage.xml" \
+                            test-runner'''
                     } else {
-                        bat returnStatus: true, script: "${VENV_DIR}\\Scripts\\pytest tests/unit tests/api --cov=app --cov=cpe_devops --cov-report=term-missing --cov-report=xml:reports/coverage.xml"
+                        bat '''docker compose run --rm ^
+                            -e PYTEST_ARGS="tests/unit tests/api --cov=app --cov=cpe_devops --cov-report=term-missing --cov-report=xml:/app/reports/coverage.xml" ^
+                            test-runner'''
                     }
                 }
             }
         }
 
-        stage('Collect Test Metrics') {
+        stage('Generate Allure Report') {
             steps {
-                script {
-                    if (isUnix()) {
-                        sh "${VENV_DIR}/bin/python scripts/collect_test_metrics.py --unit 22 --api 16 --ui 8 --coverage 0.80 --flaky 0.02 --avg-duration 1.8 || true"
-                    } else {
-                        bat returnStatus: true, script: "${VENV_DIR}\\Scripts\\python scripts/collect_test_metrics.py --unit 22 --api 16 --ui 8 --coverage 0.80 --flaky 0.02 --avg-duration 1.8"
-                    }
-                }
-                echo "Test metrics saved to reports/test_metrics.json"
-            }
-        }
-
-        stage('Generate Allure Results') {
-            steps {
+                // Jenkins Allure Plugin — aggregate all allure-results subdirectories
                 allure includeProperties: false, jdk: '',
                        results: [[path: 'allure-results/unit'],
                                  [path: 'allure-results/api'],
@@ -137,7 +127,7 @@ pipeline {
             }
         }
 
-        stage('Archive Reports') {
+        stage('Archive Artifacts') {
             steps {
                 archiveArtifacts artifacts: 'reports/**,allure-results/**,screenshots/**',
                                  allowEmptyArchive: true
@@ -147,7 +137,15 @@ pipeline {
 
     post {
         always {
-            echo "Pipeline finished. Check Allure report for full test results."
+            script {
+                if (isUnix()) {
+                    sh 'docker compose down -v 2>/dev/null || true'
+                } else {
+                    bat 'docker compose down -v 2>nul || ver>nul'
+                }
+            }
+            echo "Pipeline finished. Environment cleaned up."
+            echo "Check Allure report for full test results."
         }
         success {
             echo "All stages passed — Mock CPE DevOps pipeline succeeded."

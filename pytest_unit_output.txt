@@ -1,0 +1,45 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.9.9, pytest-8.2.2, pluggy-1.6.0 -- C:\Users\LPC\mock-cpe-devops-test\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+metadata: {'Python': '3.9.9', 'Platform': 'Windows-10-10.0.26100-SP0', 'Packages': {'pytest': '8.2.2', 'pluggy': '1.6.0'}, 'Plugins': {'allure-pytest': '2.13.5', 'cov': '5.0.0', 'html': '4.1.1', 'json-report': '1.5.0', 'metadata': '3.1.1'}, 'JAVA_HOME': 'D:\\cxdownload\\jdk-8u361-windows-x64.exe'}
+rootdir: C:\Users\LPC\mock-cpe-devops-test
+configfile: pytest.ini
+plugins: allure-pytest-2.13.5, cov-5.0.0, html-4.1.1, json-report-1.5.0, metadata-3.1.1
+collecting ... collected 34 items
+
+tests/unit/test_device_adapter.py::test_mock_upload_firmware_success PASSED [  2%]
+tests/unit/test_device_adapter.py::test_mock_upload_firmware_empty_path_fails PASSED [  5%]
+tests/unit/test_device_adapter.py::test_mock_trigger_upgrade_success PASSED [  8%]
+tests/unit/test_device_adapter.py::test_mock_trigger_upgrade_empty_version_fails PASSED [ 11%]
+tests/unit/test_device_adapter.py::test_mock_wait_until_online PASSED    [ 14%]
+tests/unit/test_device_adapter.py::test_mock_wait_until_online_custom_timeout PASSED [ 17%]
+tests/unit/test_device_adapter.py::test_mock_fetch_runtime_status PASSED [ 20%]
+tests/unit/test_device_adapter.py::test_mock_reboot_device_success PASSED [ 23%]
+tests/unit/test_device_adapter.py::test_mock_validate_firmware_package_success PASSED [ 26%]
+tests/unit/test_device_adapter.py::test_mock_validate_firmware_package_empty_path_fails PASSED [ 29%]
+tests/unit/test_device_adapter.py::test_trigger_upgrade_sets_runtime_version_with_v_prefix PASSED [ 32%]
+tests/unit/test_device_adapter.py::test_trigger_upgrade_sets_runtime_version_without_v_prefix PASSED [ 35%]
+tests/unit/test_device_adapter.py::test_runtime_version_defaults_to_v2_1_0 PASSED [ 38%]
+tests/unit/test_device_adapter.py::test_http_adapter_can_be_instantiated PASSED [ 41%]
+tests/unit/test_device_adapter.py::test_ssh_adapter_can_be_instantiated PASSED [ 44%]
+tests/unit/test_device_adapter.py::test_telnet_adapter_can_be_instantiated PASSED [ 47%]
+tests/unit/test_device_adapter.py::test_serial_adapter_can_be_instantiated PASSED [ 50%]
+tests/unit/test_repository.py::test_database_tables_are_created PASSED   [ 52%]
+tests/unit/test_repository.py::test_singleton_state_can_be_saved_and_loaded PASSED [ 55%]
+tests/unit/test_repository.py::test_activity_can_be_added PASSED         [ 58%]
+tests/unit/test_repository.py::test_artifact_can_be_inserted_and_listed PASSED [ 61%]
+tests/unit/test_repository.py::test_upgrade_job_can_be_inserted_and_listed PASSED [ 64%]
+tests/unit/test_repository.py::test_experiment_run_can_be_inserted_and_listed PASSED [ 67%]
+tests/unit/test_service.py::test_valid_firmware_name_is_accepted PASSED  [ 70%]
+tests/unit/test_service.py::test_invalid_firmware_extension_is_rejected PASSED [ 73%]
+tests/unit/test_service.py::test_invalid_firmware_pattern_is_rejected PASSED [ 76%]
+tests/unit/test_service.py::test_network_config_can_be_saved PASSED      [ 79%]
+tests/unit/test_service.py::test_diagnostics_can_be_refreshed PASSED     [ 82%]
+tests/unit/test_service.py::test_register_artifact_creates_record PASSED [ 85%]
+tests/unit/test_service.py::test_invalid_artifact_is_rejected PASSED     [ 88%]
+tests/unit/test_service.py::test_run_upgrade_job_passes_with_mock_adapter PASSED [ 91%]
+tests/unit/test_service.py::test_stats_summary_returns_metrics PASSED    [ 94%]
+tests/unit/test_service.py::test_run_upgrade_job_api_check_equals_1_when_version_matches PASSED [ 97%]
+tests/unit/test_service.py::test_run_upgrade_job_fails_when_runtime_version_mismatch PASSED [100%]
+
+============================= 34 passed in 18.50s =============================

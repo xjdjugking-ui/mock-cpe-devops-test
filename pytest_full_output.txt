@@ -1,0 +1,237 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.9.9, pytest-8.2.2, pluggy-1.6.0 -- C:\Users\LPC\mock-cpe-devops-test\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+metadata: {'Python': '3.9.9', 'Platform': 'Windows-10-10.0.26100-SP0', 'Packages': {'pytest': '8.2.2', 'pluggy': '1.6.0'}, 'Plugins': {'allure-pytest': '2.13.5', 'cov': '5.0.0', 'html': '4.1.1', 'json-report': '1.5.0', 'metadata': '3.1.1'}, 'JAVA_HOME': 'D:\\cxdownload\\jdk-8u361-windows-x64.exe'}
+rootdir: C:\Users\LPC\mock-cpe-devops-test
+configfile: pytest.ini
+plugins: allure-pytest-2.13.5, cov-5.0.0, html-4.1.1, json-report-1.5.0, metadata-3.1.1
+collecting ... collected 59 items / 1 deselected / 58 selected
+
+tests/api/test_api.py::test_health_api PASSED                            [  1%]
+tests/api/test_api.py::test_readiness_api PASSED                         [  3%]
+tests/api/test_api.py::test_dashboard_api PASSED                         [  5%]
+tests/api/test_api.py::test_get_network_api PASSED                       [  6%]
+tests/api/test_api.py::test_update_network_api PASSED                    [  8%]
+tests/api/test_api.py::test_validate_valid_firmware_api PASSED           [ 10%]
+tests/api/test_api.py::test_validate_invalid_firmware_api PASSED         [ 12%]
+tests/api/test_api.py::test_get_artifacts_api PASSED                     [ 13%]
+tests/api/test_api.py::test_register_artifact_api PASSED                 [ 15%]
+tests/api/test_api.py::test_register_invalid_artifact_api PASSED         [ 17%]
+tests/api/test_api.py::test_run_upgrade_job_api PASSED                   [ 18%]
+tests/api/test_api.py::test_run_upgrade_job_missing_artifact_id PASSED   [ 20%]
+tests/api/test_api.py::test_get_upgrade_jobs_api PASSED                  [ 22%]
+tests/api/test_api.py::test_experiments_api PASSED                       [ 24%]
+tests/api/test_api.py::test_get_diagnostics_api PASSED                   [ 25%]
+tests/api/test_api.py::test_refresh_diagnostics_api PASSED               [ 27%]
+tests/ui/test_ui_smoke.py::test_admin_can_login FAILED                   [ 29%]
+tests/ui/test_ui_smoke.py::test_login_fails_with_wrong_password PASSED   [ 31%]
+tests/ui/test_ui_smoke.py::test_network_settings_can_be_saved FAILED     [ 32%]
+tests/ui/test_ui_smoke.py::test_invalid_firmware_file_is_rejected FAILED [ 34%]
+tests/ui/test_ui_smoke.py::test_valid_firmware_file_is_validated PASSED  [ 36%]
+tests/ui/test_ui_smoke.py::test_artifact_can_be_registered PASSED        [ 37%]
+tests/ui/test_ui_smoke.py::test_upgrade_job_can_be_run FAILED            [ 39%]
+tests/ui/test_ui_smoke.py::test_stats_page_can_be_opened PASSED          [ 41%]
+tests/unit/test_device_adapter.py::test_mock_upload_firmware_success PASSED [ 43%]
+tests/unit/test_device_adapter.py::test_mock_upload_firmware_empty_path_fails PASSED [ 44%]
+tests/unit/test_device_adapter.py::test_mock_trigger_upgrade_success PASSED [ 46%]
+tests/unit/test_device_adapter.py::test_mock_trigger_upgrade_empty_version_fails PASSED [ 48%]
+tests/unit/test_device_adapter.py::test_mock_wait_until_online PASSED    [ 50%]
+tests/unit/test_device_adapter.py::test_mock_wait_until_online_custom_timeout PASSED [ 51%]
+tests/unit/test_device_adapter.py::test_mock_fetch_runtime_status PASSED [ 53%]
+tests/unit/test_device_adapter.py::test_mock_reboot_device_success PASSED [ 55%]
+tests/unit/test_device_adapter.py::test_mock_validate_firmware_package_success PASSED [ 56%]
+tests/unit/test_device_adapter.py::test_mock_validate_firmware_package_empty_path_fails PASSED [ 58%]
+tests/unit/test_device_adapter.py::test_trigger_upgrade_sets_runtime_version_with_v_prefix PASSED [ 60%]
+tests/unit/test_device_adapter.py::test_trigger_upgrade_sets_runtime_version_without_v_prefix PASSED [ 62%]
+tests/unit/test_device_adapter.py::test_runtime_version_defaults_to_v2_1_0 PASSED [ 63%]
+tests/unit/test_device_adapter.py::test_http_adapter_can_be_instantiated PASSED [ 65%]
+tests/unit/test_device_adapter.py::test_ssh_adapter_can_be_instantiated PASSED [ 67%]
+tests/unit/test_device_adapter.py::test_telnet_adapter_can_be_instantiated PASSED [ 68%]
+tests/unit/test_device_adapter.py::test_serial_adapter_can_be_instantiated PASSED [ 70%]
+tests/unit/test_repository.py::test_database_tables_are_created PASSED   [ 72%]
+tests/unit/test_repository.py::test_singleton_state_can_be_saved_and_loaded PASSED [ 74%]
+tests/unit/test_repository.py::test_activity_can_be_added PASSED         [ 75%]
+tests/unit/test_repository.py::test_artifact_can_be_inserted_and_listed PASSED [ 77%]
+tests/unit/test_repository.py::test_upgrade_job_can_be_inserted_and_listed PASSED [ 79%]
+tests/unit/test_repository.py::test_experiment_run_can_be_inserted_and_listed PASSED [ 81%]
+tests/unit/test_service.py::test_valid_firmware_name_is_accepted PASSED  [ 82%]
+tests/unit/test_service.py::test_invalid_firmware_extension_is_rejected PASSED [ 84%]
+tests/unit/test_service.py::test_invalid_firmware_pattern_is_rejected PASSED [ 86%]
+tests/unit/test_service.py::test_network_config_can_be_saved PASSED      [ 87%]
+tests/unit/test_service.py::test_diagnostics_can_be_refreshed PASSED     [ 89%]
+tests/unit/test_service.py::test_register_artifact_creates_record PASSED [ 91%]
+tests/unit/test_service.py::test_invalid_artifact_is_rejected PASSED     [ 93%]
+tests/unit/test_service.py::test_run_upgrade_job_passes_with_mock_adapter PASSED [ 94%]
+tests/unit/test_service.py::test_stats_summary_returns_metrics PASSED    [ 96%]
+tests/unit/test_service.py::test_run_upgrade_job_api_check_equals_1_when_version_matches PASSED [ 98%]
+tests/unit/test_service.py::test_run_upgrade_job_fails_when_runtime_version_mismatch PASSED [100%]
+
+================================== FAILURES ===================================
+____________________________ test_admin_can_login _____________________________
+tests\ui\test_ui_smoke.py:32: in test_admin_can_login
+    assert "/dashboard" in driver.current_url
+E   assert '/dashboard' in 'http://127.0.0.1:5000/login'
+E    +  where 'http://127.0.0.1:5000/login' = <selenium.webdriver.chrome.webdriver.WebDriver (session="9e805aa4b36aec80168d9fe08a578957")>.current_url
+_____________________ test_network_settings_can_be_saved ______________________
+tests\ui\test_ui_smoke.py:49: in test_network_settings_can_be_saved
+    page.save_network(
+cpe_devops\pages\network_page.py:10: in save_network
+    self._fill("ssid", ssid)
+cpe_devops\base_page.py:28: in _fill
+    el = self._find(By.ID, element_id)
+cpe_devops\base_page.py:19: in _find
+    return self._wait(timeout).until(EC.presence_of_element_located((by, value)))
+.venv\lib\site-packages\selenium\webdriver\support\wait.py:105: in until
+    raise TimeoutException(message, screen, stacktrace)
+E   selenium.common.exceptions.TimeoutException: Message: 
+E   Stacktrace:
+E   	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+E   	chromedriver!(No symbol) [0x7ff7e682d57d]
+E   	chromedriver!(No symbol) [0x7ff7e688767e]
+E   	chromedriver!(No symbol) [0x7ff7e688798c]
+E   	chromedriver!(No symbol) [0x7ff7e68d80c7]
+E   	chromedriver!(No symbol) [0x7ff7e68d4c63]
+E   	chromedriver!(No symbol) [0x7ff7e6879d58]
+E   	chromedriver!(No symbol) [0x7ff7e687ac43]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+E   	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+E   	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+___________________ test_invalid_firmware_file_is_rejected ____________________
+tests\ui\test_ui_smoke.py:67: in test_invalid_firmware_file_is_rejected
+    page.validate_firmware("bad_firmware.exe")
+cpe_devops\pages\upgrade_page.py:9: in validate_firmware
+    self._fill("firmware-filename", filename)
+cpe_devops\base_page.py:28: in _fill
+    el = self._find(By.ID, element_id)
+cpe_devops\base_page.py:19: in _find
+    return self._wait(timeout).until(EC.presence_of_element_located((by, value)))
+.venv\lib\site-packages\selenium\webdriver\support\wait.py:105: in until
+    raise TimeoutException(message, screen, stacktrace)
+E   selenium.common.exceptions.TimeoutException: Message: 
+E   Stacktrace:
+E   	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+E   	chromedriver!(No symbol) [0x7ff7e682d57d]
+E   	chromedriver!(No symbol) [0x7ff7e688767e]
+E   	chromedriver!(No symbol) [0x7ff7e688798c]
+E   	chromedriver!(No symbol) [0x7ff7e68d80c7]
+E   	chromedriver!(No symbol) [0x7ff7e68d4c63]
+E   	chromedriver!(No symbol) [0x7ff7e6879d58]
+E   	chromedriver!(No symbol) [0x7ff7e687ac43]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+E   	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+E   	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+_________________________ test_upgrade_job_can_be_run _________________________
+tests\ui\test_ui_smoke.py:109: in test_upgrade_job_can_be_run
+    art_page.register_artifact(
+cpe_devops\pages\artifacts_page.py:10: in register_artifact
+    self._fill("artifact-filename", filename)
+cpe_devops\base_page.py:28: in _fill
+    el = self._find(By.ID, element_id)
+cpe_devops\base_page.py:19: in _find
+    return self._wait(timeout).until(EC.presence_of_element_located((by, value)))
+.venv\lib\site-packages\selenium\webdriver\support\wait.py:105: in until
+    raise TimeoutException(message, screen, stacktrace)
+E   selenium.common.exceptions.TimeoutException: Message: 
+E   Stacktrace:
+E   	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+E   	chromedriver!(No symbol) [0x7ff7e682d57d]
+E   	chromedriver!(No symbol) [0x7ff7e688767e]
+E   	chromedriver!(No symbol) [0x7ff7e688798c]
+E   	chromedriver!(No symbol) [0x7ff7e68d80c7]
+E   	chromedriver!(No symbol) [0x7ff7e68d4c63]
+E   	chromedriver!(No symbol) [0x7ff7e6879d58]
+E   	chromedriver!(No symbol) [0x7ff7e687ac43]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+E   	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+E   	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+E   	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+=========================== short test summary info ===========================
+FAILED tests/ui/test_ui_smoke.py::test_admin_can_login - assert '/dashboard' in 'http://127.0.0.1:5000/login'
+ +  where 'http://127.0.0.1:5000/login' = <selenium.webdriver.chrome.webdriver.WebDriver (session="9e805aa4b36aec80168d9fe08a578957")>.current_url
+FAILED tests/ui/test_ui_smoke.py::test_network_settings_can_be_saved - selenium.common.exceptions.TimeoutException: Message: 
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+	chromedriver!(No symbol) [0x7ff7e682d57d]
+	chromedriver!(No symbol) [0x7ff7e688767e]
+	chromedriver!(No symbol) [0x7ff7e688798c]
+	chromedriver!(No symbol) [0x7ff7e68d80c7]
+	chromedriver!(No symbol) [0x7ff7e68d4c63]
+	chromedriver!(No symbol) [0x7ff7e6879d58]
+	chromedriver!(No symbol) [0x7ff7e687ac43]
+	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+FAILED tests/ui/test_ui_smoke.py::test_invalid_firmware_file_is_rejected - selenium.common.exceptions.TimeoutException: Message: 
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+	chromedriver!(No symbol) [0x7ff7e682d57d]
+	chromedriver!(No symbol) [0x7ff7e688767e]
+	chromedriver!(No symbol) [0x7ff7e688798c]
+	chromedriver!(No symbol) [0x7ff7e68d80c7]
+	chromedriver!(No symbol) [0x7ff7e68d4c63]
+	chromedriver!(No symbol) [0x7ff7e6879d58]
+	chromedriver!(No symbol) [0x7ff7e687ac43]
+	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+FAILED tests/ui/test_ui_smoke.py::test_upgrade_job_can_be_run - selenium.common.exceptions.TimeoutException: Message: 
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+	chromedriver!(No symbol) [0x7ff7e682d57d]
+	chromedriver!(No symbol) [0x7ff7e688767e]
+	chromedriver!(No symbol) [0x7ff7e688798c]
+	chromedriver!(No symbol) [0x7ff7e68d80c7]
+	chromedriver!(No symbol) [0x7ff7e68d4c63]
+	chromedriver!(No symbol) [0x7ff7e6879d58]
+	chromedriver!(No symbol) [0x7ff7e687ac43]
+	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+=========== 4 failed, 54 passed, 1 deselected in 127.97s (0:02:07) ============

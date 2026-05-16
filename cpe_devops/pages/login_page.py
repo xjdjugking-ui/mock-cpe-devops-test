@@ -7,9 +7,9 @@ class LoginPage(BasePage):
         self.driver.get(self._url("/login"))
 
     def login(self, username: str, password: str):
-        self._fill("username", username)
-        self._fill("password", password)
-        self._click("login-button")
+        self._fill(self.sel["username"], username)
+        self._fill(self.sel["password"], password)
+        self._click(self.sel["login_button"])
 
     def error_message(self) -> str:
         try:

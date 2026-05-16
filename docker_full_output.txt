@@ -1,0 +1,86 @@
+[START] 2026/05/16 ÷‹¡˘ 18:12:14.12 
+ Image selenium/standalone-chrome:latest Pulling 
+ 412d779596da Pulling fs layer 0B
+ 92448e1cf6b2 Pulling fs layer 0B
+ cd5d32a2d555 Pulling fs layer 0B
+ 4f5369907232 Pulling fs layer 0B
+ 21c86c2d6bf7 Pulling fs layer 0B
+ 826fb5d13d4c Pulling fs layer 0B
+ ab6718ac0e1a Pulling fs layer 0B
+ 5b1865942845 Pulling fs layer 0B
+ f50f47d0565e Pulling fs layer 0B
+ 64ed03e1276a Pulling fs layer 0B
+ 3784e4039d6d Pulling fs layer 0B
+ c6a27c823805 Pulling fs layer 0B
+ 922adac23417 Pulling fs layer 0B
+ 45a1d1018952 Pulling fs layer 0B
+ 823bab2aadfb Pulling fs layer 0B
+ 85f8ee413509 Pulling fs layer 0B
+ f97a44645d25 Pulling fs layer 0B
+ 1b413dcaa663 Pulling fs layer 0B
+ 2a1a5d178d9b Pulling fs layer 0B
+ 82cc9c8e8ced Pulling fs layer 0B
+ 55139ee54839 Pulling fs layer 0B
+ 100eca52f40e Pulling fs layer 0B
+ ffaabe6692f5 Pulling fs layer 0B
+ 13188a0142d4 Pulling fs layer 0B
+ fc142eede934 Pulling fs layer 0B
+ 76f891146534 Pulling fs layer 0B
+ 99800320d714 Pulling fs layer 0B
+ d8e4fa80e214 Pulling fs layer 0B
+ 2051e431c7d3 Pulling fs layer 0B
+ 34d79e3c8ec0 Pulling fs layer 0B
+ f26675efd938 Pulling fs layer 0B
+ d99ec3ad2038 Pulling fs layer 0B
+ 21e4abec9c68 Pulling fs layer 0B
+ 42940f5d634b Pulling fs layer 0B
+ 53994365f712 Pulling fs layer 0B
+ 9f3012034708 Pulling fs layer 0B
+ eaab82374a0f Pulling fs layer 0B
+ Image selenium/standalone-chrome:latest Pulled 
+ Image mock-cpe-devops-test-mock-cpe Building 
+ Image mock-cpe-devops-test-test-runner Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.04kB 0.1s done
+#1 DONE 0.1s
+
+#2 [mock-cpe internal] load build definition from Dockerfile
+#2 transferring dockerfile:
+#2 transferring dockerfile: 658B 0.0s done
+#2 DONE 0.5s
+
+#2 [mock-cpe internal] load build definition from Dockerfile
+#2 DONE 0.5s
+
+#3 [mock-cpe internal] load metadata for docker.io/library/python:3.10-slim
+#3 ...
+
+#4 [auth] library/python:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#3 [mock-cpe internal] load metadata for docker.io/library/python:3.10-slim
+#3 ERROR: failed to authorize: failed to fetch oauth token: Post "https://auth.docker.io/token": dial tcp 199.59.148.9:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+------
+ > [mock-cpe internal] load metadata for docker.io/library/python:3.10-slim:
+------
+Dockerfile:2
+
+--------------------
+
+   1 |     # Dockerfile ‚Äî Mock CPE Flask Application
+
+   2 | >>> FROM python:3.10-slim
+
+   3 |     
+
+   4 |     WORKDIR /app
+
+--------------------
+
+target mock-cpe: failed to solve: failed to fetch oauth token: Post "https://auth.docker.io/token": dial tcp 199.59.148.9:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+
+
+
+View build details: docker-desktop://dashboard/build/default/default/gp3f6rpevsj2dnw7x3rsanxuu
+
+[END] 2026/05/16 ÷‹¡˘ 18:15:37.98 RC=1 

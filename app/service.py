@@ -129,41 +129,100 @@ class GatewayService:
         return self.repo.list_artifacts()
 
     # ------------------------------------------------------------------
-    # Upgrade jobs
+    # Upgrade jobs — Mock FOTA 10-step pipeline
     # ------------------------------------------------------------------
     def run_upgrade_job(self, artifact_id: int) -> dict:
+        """Mock FOTA upgrade pipeline (10 steps).
+
+        Steps:
+          1) 固件制品登记     – register_artifact()
+          2) 固件命名校验     – validate_firmware()
+          3) 固件上传模拟     – adapter.upload_firmware()
+          4) 固件包校验模拟   – adapter.validate_firmware_package()
+          5) 触发升级模拟     – adapter.trigger_upgrade()
+          6) 设备重启模拟     – adapter.reboot_device()
+          7) 回连检测模拟     – adapter.wait_until_online()
+          8) API 检查模拟     – adapter.fetch_runtime_status()
+          9) 写入升级任务记录 – repo.insert_job()
+         10) 写入实验统计记录 – repo.insert_experiment()
+        """
+        return self._run_mock_fota_pipeline(artifact_id)
+
+    def _run_mock_fota_pipeline(self, artifact_id: int) -> dict:
         artifact = self.repo.get_artifact(artifact_id)
         if not artifact:
             return {'ok': False, 'message': f'制品 ID={artifact_id} 不存在'}
 
         t0 = time.time()
         path = artifact.get('local_path') or f"artifacts/{artifact['filename']}"
-        upload_ok = self.adapter.upload_firmware(path)
-        trigger_ok = self.adapter.trigger_upgrade(artifact['version'])
-        online_ok = self.adapter.wait_until_online()
-        runtime = self.adapter.fetch_runtime_status()
-        api_check = bool(runtime.get('firmware_version'))
-        web_check = True
+        steps = {}
+        fail_reasons = []
+
+        # Step 3 – 固件上传模拟
+        steps['upload_ok'] = self.adapter.upload_firmware(path)
+        if not steps['upload_ok']:
+            fail_reasons.append('固件上传失败')
+
+        # Step 4 – 固件包完整性校验
+        steps['validate_ok'] = self.adapter.validate_firmware_package(path) if steps.get('upload_ok', True) else False
+        if not steps['validate_ok']:
+            fail_reasons.append('固件包校验未通过')
+
+        # Step 5 – 触发升级
+        steps['trigger_ok'] = self.adapter.trigger_upgrade(artifact['version']) if steps.get('validate_ok', False) else False
+        if not steps['trigger_ok']:
+            fail_reasons.append('触发升级失败')
+
+        # Step 6 – 设备重启
+        steps['reboot_ok'] = self.adapter.reboot_device() if steps.get('trigger_ok', False) else False
+        if not steps['reboot_ok']:
+            fail_reasons.append('设备重启失败')
+
+        # Step 7 – 回连检测
+        steps['online_ok'] = self.adapter.wait_until_online() if steps.get('reboot_ok', False) else False
+        if not steps['online_ok']:
+            fail_reasons.append('设备回连超时')
+
+        # Step 8 – API 运行时状态检查
+        expected_version = f"v{artifact['version']}"
+        runtime = self.adapter.fetch_runtime_status() if steps.get('online_ok', False) else {}
+        steps['api_check'] = int(runtime.get('firmware_version') == expected_version)
+        steps['web_check'] = 1  # Web UI 检查通过（mock）
+        if not steps['api_check']:
+            fail_reasons.append('运行版本与目标版本不一致')
+
         duration = round(time.time() - t0, 2)
 
-        all_ok = all([upload_ok, trigger_ok, online_ok, api_check, web_check])
+        all_ok = all([steps.get('upload_ok', False),
+                      steps.get('validate_ok', False),
+                      steps.get('trigger_ok', False),
+                      steps.get('reboot_ok', False),
+                      steps.get('online_ok', False),
+                      steps['api_check'],
+                      steps['web_check']])
         status = 'passed' if all_ok else 'failed'
-        failure_reason = None if all_ok else '升级步骤未全部通过'
+        failure_reason = '; '.join(fail_reasons) if fail_reasons else None
+        if not all_ok and not fail_reasons:
+            failure_reason = '升级步骤未全部通过'
 
+        # Step 9 – 写入升级任务记录
         job_id = self.repo.insert_job({
             'artifact_id': artifact_id,
             'target_version': artifact['version'],
             'status': status,
-            'upload_ok': int(upload_ok),
-            'trigger_ok': int(trigger_ok),
-            'online_ok': int(online_ok),
-            'api_check': int(api_check),
-            'web_check': int(web_check),
+            'upload_ok': int(steps.get('upload_ok', False)),
+            'validate_ok': int(steps.get('validate_ok', False)),
+            'trigger_ok': int(steps.get('trigger_ok', False)),
+            'reboot_ok': int(steps.get('reboot_ok', False)),
+            'online_ok': int(steps.get('online_ok', False)),
+            'api_check': steps['api_check'],
+            'web_check': steps['web_check'],
             'duration_seconds': duration,
             'failure_reason': failure_reason,
             'created_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         })
 
+        # Step 10 – 写入实验统计记录
         coverage = round(random.uniform(0.80, 0.98), 4)
         flaky_rate = round(random.uniform(0.00, 0.05), 4)
         pass_rate = 1.0 if all_ok else round(random.uniform(0.60, 0.90), 4)
@@ -190,13 +249,18 @@ class GatewayService:
             })
             self.repo.set_state('upgrade', upgrade_state)
 
-        self.repo.add_activity('升级任务', f"制品 {artifact['filename']} 升级{('成功' if all_ok else '失败')}，耗时 {duration}s")
+        step_detail = {k: int(v) if isinstance(v, bool) else v for k, v in steps.items()}
+        self.repo.add_activity('升级任务',
+                               f"制品 {artifact['filename']} 升级{('成功' if all_ok else '失败')}，"
+                               f"耗时 {duration}s，步骤详情：{step_detail}")
         return {
             'ok': all_ok,
             'job_id': job_id,
             'status': status,
             'duration': duration,
-            'message': f"升级任务完成，状态：{status}",
+            'steps': step_detail,
+            'failure_reason': failure_reason,
+            'message': f"Mock FOTA 升级完成，状态：{status}",
         }
 
     def list_jobs(self) -> list:

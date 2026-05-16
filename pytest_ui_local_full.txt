@@ -1,0 +1,602 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.9.9, pytest-8.2.2, pluggy-1.6.0 -- C:\Users\LPC\mock-cpe-devops-test\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+metadata: {'Python': '3.9.9', 'Platform': 'Windows-10-10.0.26100-SP0', 'Packages': {'pytest': '8.2.2', 'pluggy': '1.6.0'}, 'Plugins': {'allure-pytest': '2.13.5', 'cov': '5.0.0', 'html': '4.1.1', 'json-report': '1.5.0', 'metadata': '3.1.1'}, 'JAVA_HOME': 'D:\\cxdownload\\jdk-8u361-windows-x64.exe'}
+rootdir: C:\Users\LPC\mock-cpe-devops-test
+configfile: pytest.ini
+plugins: allure-pytest-2.13.5, cov-5.0.0, html-4.1.1, json-report-1.5.0, metadata-3.1.1
+collecting ... collected 9 items / 1 deselected / 8 selected
+
+tests/ui/test_ui_smoke.py::test_admin_can_login FAILED                   [ 12%]
+tests/ui/test_ui_smoke.py::test_login_fails_with_wrong_password PASSED   [ 25%]
+tests/ui/test_ui_smoke.py::test_network_settings_can_be_saved PASSED     [ 37%]
+tests/ui/test_ui_smoke.py::test_invalid_firmware_file_is_rejected FAILED [ 50%]
+tests/ui/test_ui_smoke.py::test_valid_firmware_file_is_validated FAILED  [ 62%]
+tests/ui/test_ui_smoke.py::test_artifact_can_be_registered FAILED        [ 75%]
+tests/ui/test_ui_smoke.py::test_upgrade_job_can_be_run FAILED            [ 87%]
+tests/ui/test_ui_smoke.py::test_stats_page_can_be_opened FAILED          [100%]
+
+================================== FAILURES ===================================
+____________________________ test_admin_can_login _____________________________
+
+driver = <selenium.webdriver.chrome.webdriver.WebDriver (session="bcb039479cd1b41fb951132268a6e803")>
+
+    def test_admin_can_login(driver):
+        page = LoginPage(driver, BASE_URL)
+        page.load()
+        page.login("admin", "admin123")
+>       assert "/dashboard" in driver.current_url
+E       assert '/dashboard' in 'http://127.0.0.1:5000/login'
+E        +  where 'http://127.0.0.1:5000/login' = <selenium.webdriver.chrome.webdriver.WebDriver (session="bcb039479cd1b41fb951132268a6e803")>.current_url
+
+tests\ui\test_ui_smoke.py:32: AssertionError
+___________________ test_invalid_firmware_file_is_rejected ____________________
+
+logged_in_driver = <selenium.webdriver.chrome.webdriver.WebDriver (session="f46168d3aba963e382deb19193b31a12")>
+
+    def test_invalid_firmware_file_is_rejected(logged_in_driver):
+        page = UpgradePage(logged_in_driver, BASE_URL)
+        page.load()
+>       page.validate_firmware("bad_firmware.exe")
+
+tests\ui\test_ui_smoke.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.upgrade_page.UpgradePage object at 0x0000022C1C99DB80>
+filename = 'bad_firmware.exe'
+
+    def validate_firmware(self, filename: str):
+>       self._fill("firmware-filename", filename)
+
+cpe_devops\pages\upgrade_page.py:9: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.upgrade_page.UpgradePage object at 0x0000022C1C99DB80>
+element_id = 'firmware-filename', value = 'bad_firmware.exe'
+
+    def _fill(self, element_id: str, value: str):
+>       el = self._find(By.ID, element_id)
+
+cpe_devops\base_page.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.upgrade_page.UpgradePage object at 0x0000022C1C99DB80>
+by = 'id', value = 'firmware-filename', timeout = 15
+
+    def _find(self, by, value, timeout: int = 15):
+>       return self._wait(timeout).until(EC.presence_of_element_located((by, value)))
+
+cpe_devops\base_page.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <selenium.webdriver.support.wait.WebDriverWait (session="f46168d3aba963e382deb19193b31a12")>
+method = <function presence_of_element_located.<locals>._predicate at 0x0000022C1CA88790>
+message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -> T:
+        """Calls the method provided with the driver as an argument until the \
+        return value does not evaluate to ``False``.
+    
+        :param method: callable(WebDriver)
+        :param message: optional message for :exc:`TimeoutException`
+        :returns: the result of the last call to `method`
+        :raises: :exc:`selenium.common.exceptions.TimeoutException` if timeout occurs
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            time.sleep(self._poll)
+            if time.monotonic() > end_time:
+                break
+>       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+E       	chromedriver!(No symbol) [0x7ff7e682d57d]
+E       	chromedriver!(No symbol) [0x7ff7e688767e]
+E       	chromedriver!(No symbol) [0x7ff7e688798c]
+E       	chromedriver!(No symbol) [0x7ff7e68d80c7]
+E       	chromedriver!(No symbol) [0x7ff7e68d4c63]
+E       	chromedriver!(No symbol) [0x7ff7e6879d58]
+E       	chromedriver!(No symbol) [0x7ff7e687ac43]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+E       	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+E       	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+
+.venv\lib\site-packages\selenium\webdriver\support\wait.py:105: TimeoutException
+____________________ test_valid_firmware_file_is_validated ____________________
+
+logged_in_driver = <selenium.webdriver.chrome.webdriver.WebDriver (session="df4bca5da902b190fa0e7dcf7cdbea28")>
+
+    def test_valid_firmware_file_is_validated(logged_in_driver):
+        page = UpgradePage(logged_in_driver, BASE_URL)
+        page.load()
+>       page.validate_firmware("cpe_gateway_v3.0.0.bin")
+
+tests\ui\test_ui_smoke.py:77: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.upgrade_page.UpgradePage object at 0x0000022C1CAF12B0>
+filename = 'cpe_gateway_v3.0.0.bin'
+
+    def validate_firmware(self, filename: str):
+>       self._fill("firmware-filename", filename)
+
+cpe_devops\pages\upgrade_page.py:9: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.upgrade_page.UpgradePage object at 0x0000022C1CAF12B0>
+element_id = 'firmware-filename', value = 'cpe_gateway_v3.0.0.bin'
+
+    def _fill(self, element_id: str, value: str):
+>       el = self._find(By.ID, element_id)
+
+cpe_devops\base_page.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.upgrade_page.UpgradePage object at 0x0000022C1CAF12B0>
+by = 'id', value = 'firmware-filename', timeout = 15
+
+    def _find(self, by, value, timeout: int = 15):
+>       return self._wait(timeout).until(EC.presence_of_element_located((by, value)))
+
+cpe_devops\base_page.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <selenium.webdriver.support.wait.WebDriverWait (session="df4bca5da902b190fa0e7dcf7cdbea28")>
+method = <function presence_of_element_located.<locals>._predicate at 0x0000022C1CA88AF0>
+message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -> T:
+        """Calls the method provided with the driver as an argument until the \
+        return value does not evaluate to ``False``.
+    
+        :param method: callable(WebDriver)
+        :param message: optional message for :exc:`TimeoutException`
+        :returns: the result of the last call to `method`
+        :raises: :exc:`selenium.common.exceptions.TimeoutException` if timeout occurs
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            time.sleep(self._poll)
+            if time.monotonic() > end_time:
+                break
+>       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+E       	chromedriver!(No symbol) [0x7ff7e682d57d]
+E       	chromedriver!(No symbol) [0x7ff7e688767e]
+E       	chromedriver!(No symbol) [0x7ff7e688798c]
+E       	chromedriver!(No symbol) [0x7ff7e68d80c7]
+E       	chromedriver!(No symbol) [0x7ff7e68d4c63]
+E       	chromedriver!(No symbol) [0x7ff7e6879d58]
+E       	chromedriver!(No symbol) [0x7ff7e687ac43]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+E       	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+E       	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+
+.venv\lib\site-packages\selenium\webdriver\support\wait.py:105: TimeoutException
+_______________________ test_artifact_can_be_registered _______________________
+
+logged_in_driver = <selenium.webdriver.chrome.webdriver.WebDriver (session="23e784cbb2ef749ee290f586cd9ef5f9")>
+
+    def test_artifact_can_be_registered(logged_in_driver):
+        page = ArtifactsPage(logged_in_driver, BASE_URL)
+        page.load()
+>       page.register_artifact(
+            filename="cpe_gateway_v7.0.0.bin",
+            source_type="manual",
+            source_ref="ui-test-build",
+            path="artifacts/cpe_gateway_v7.0.0.bin",
+            note="UI smoke test artifact",
+        )
+
+tests\ui\test_ui_smoke.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.artifacts_page.ArtifactsPage object at 0x0000022C1CAF1250>
+filename = 'cpe_gateway_v7.0.0.bin', source_type = 'manual'
+source_ref = 'ui-test-build', path = 'artifacts/cpe_gateway_v7.0.0.bin'
+note = 'UI smoke test artifact'
+
+    def register_artifact(self, filename: str, source_type: str = "manual",
+                          source_ref: str = "", path: str = "", note: str = ""):
+>       self._fill("artifact-filename", filename)
+
+cpe_devops\pages\artifacts_page.py:10: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.artifacts_page.ArtifactsPage object at 0x0000022C1CAF1250>
+element_id = 'artifact-filename', value = 'cpe_gateway_v7.0.0.bin'
+
+    def _fill(self, element_id: str, value: str):
+>       el = self._find(By.ID, element_id)
+
+cpe_devops\base_page.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.artifacts_page.ArtifactsPage object at 0x0000022C1CAF1250>
+by = 'id', value = 'artifact-filename', timeout = 15
+
+    def _find(self, by, value, timeout: int = 15):
+>       return self._wait(timeout).until(EC.presence_of_element_located((by, value)))
+
+cpe_devops\base_page.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <selenium.webdriver.support.wait.WebDriverWait (session="23e784cbb2ef749ee290f586cd9ef5f9")>
+method = <function presence_of_element_located.<locals>._predicate at 0x0000022C1CA88A60>
+message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -> T:
+        """Calls the method provided with the driver as an argument until the \
+        return value does not evaluate to ``False``.
+    
+        :param method: callable(WebDriver)
+        :param message: optional message for :exc:`TimeoutException`
+        :returns: the result of the last call to `method`
+        :raises: :exc:`selenium.common.exceptions.TimeoutException` if timeout occurs
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            time.sleep(self._poll)
+            if time.monotonic() > end_time:
+                break
+>       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+E       	chromedriver!(No symbol) [0x7ff7e682d57d]
+E       	chromedriver!(No symbol) [0x7ff7e688767e]
+E       	chromedriver!(No symbol) [0x7ff7e688798c]
+E       	chromedriver!(No symbol) [0x7ff7e68d80c7]
+E       	chromedriver!(No symbol) [0x7ff7e68d4c63]
+E       	chromedriver!(No symbol) [0x7ff7e6879d58]
+E       	chromedriver!(No symbol) [0x7ff7e687ac43]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+E       	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+E       	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+
+.venv\lib\site-packages\selenium\webdriver\support\wait.py:105: TimeoutException
+_________________________ test_upgrade_job_can_be_run _________________________
+
+logged_in_driver = <selenium.webdriver.chrome.webdriver.WebDriver (session="9411649e628e27ccd7c0e779fedfec57")>
+
+    def test_upgrade_job_can_be_run(logged_in_driver):
+        # ensure at least one artifact exists
+        art_page = ArtifactsPage(logged_in_driver, BASE_URL)
+        art_page.load()
+        art_page.register_artifact(
+            filename="cpe_gateway_v6.0.0.bin",
+            source_type="ci",
+            source_ref="job-test-build",
+        )
+        jobs_page = JobsPage(logged_in_driver, BASE_URL)
+        jobs_page.load()
+>       jobs_page.run_first_job()
+
+tests\ui\test_ui_smoke.py:116: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.jobs_page.JobsPage object at 0x0000022C1CAA5370>
+
+    def run_first_job(self):
+>       sel = Select(self._find(By.ID, "artifact-select"))
+
+cpe_devops\pages\jobs_page.py:11: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.jobs_page.JobsPage object at 0x0000022C1CAA5370>
+by = 'id', value = 'artifact-select', timeout = 15
+
+    def _find(self, by, value, timeout: int = 15):
+>       return self._wait(timeout).until(EC.presence_of_element_located((by, value)))
+
+cpe_devops\base_page.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <selenium.webdriver.support.wait.WebDriverWait (session="9411649e628e27ccd7c0e779fedfec57")>
+method = <function presence_of_element_located.<locals>._predicate at 0x0000022C1CAF8C10>
+message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -> T:
+        """Calls the method provided with the driver as an argument until the \
+        return value does not evaluate to ``False``.
+    
+        :param method: callable(WebDriver)
+        :param message: optional message for :exc:`TimeoutException`
+        :returns: the result of the last call to `method`
+        :raises: :exc:`selenium.common.exceptions.TimeoutException` if timeout occurs
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            time.sleep(self._poll)
+            if time.monotonic() > end_time:
+                break
+>       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+E       	chromedriver!(No symbol) [0x7ff7e682d57d]
+E       	chromedriver!(No symbol) [0x7ff7e688767e]
+E       	chromedriver!(No symbol) [0x7ff7e688798c]
+E       	chromedriver!(No symbol) [0x7ff7e68d80c7]
+E       	chromedriver!(No symbol) [0x7ff7e68d4c63]
+E       	chromedriver!(No symbol) [0x7ff7e6879d58]
+E       	chromedriver!(No symbol) [0x7ff7e687ac43]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+E       	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+E       	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+
+.venv\lib\site-packages\selenium\webdriver\support\wait.py:105: TimeoutException
+________________________ test_stats_page_can_be_opened ________________________
+
+logged_in_driver = <selenium.webdriver.chrome.webdriver.WebDriver (session="fe8673c4898810b9b4226791d0758e09")>
+
+    def test_stats_page_can_be_opened(logged_in_driver):
+        page = StatsPage(logged_in_driver, BASE_URL)
+        page.load()
+>       title = page.title()
+
+tests\ui\test_ui_smoke.py:129: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.stats_page.StatsPage object at 0x0000022C1CAA52B0>
+
+    def title(self) -> str:
+>       return self._text("stats-title")
+
+cpe_devops\pages\stats_page.py:9: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.stats_page.StatsPage object at 0x0000022C1CAA52B0>
+element_id = 'stats-title'
+
+    def _text(self, element_id: str) -> str:
+>       return self._find_visible(By.ID, element_id).text.strip()
+
+cpe_devops\base_page.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <cpe_devops.pages.stats_page.StatsPage object at 0x0000022C1CAA52B0>
+by = 'id', value = 'stats-title', timeout = 15
+
+    def _find_visible(self, by, value, timeout: int = 15):
+>       return self._wait(timeout).until(EC.visibility_of_element_located((by, value)))
+
+cpe_devops\base_page.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <selenium.webdriver.support.wait.WebDriverWait (session="fe8673c4898810b9b4226791d0758e09")>
+method = <function visibility_of_element_located.<locals>._predicate at 0x0000022C1D300940>
+message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -> T:
+        """Calls the method provided with the driver as an argument until the \
+        return value does not evaluate to ``False``.
+    
+        :param method: callable(WebDriver)
+        :param message: optional message for :exc:`TimeoutException`
+        :returns: the result of the last call to `method`
+        :raises: :exc:`selenium.common.exceptions.TimeoutException` if timeout occurs
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            time.sleep(self._poll)
+            if time.monotonic() > end_time:
+                break
+>       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+E       	chromedriver!(No symbol) [0x7ff7e682d57d]
+E       	chromedriver!(No symbol) [0x7ff7e688767e]
+E       	chromedriver!(No symbol) [0x7ff7e688798c]
+E       	chromedriver!(No symbol) [0x7ff7e68d80c7]
+E       	chromedriver!(No symbol) [0x7ff7e68d4c63]
+E       	chromedriver!(No symbol) [0x7ff7e6879d58]
+E       	chromedriver!(No symbol) [0x7ff7e687ac43]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+E       	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+E       	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+E       	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+
+.venv\lib\site-packages\selenium\webdriver\support\wait.py:105: TimeoutException
+=========================== short test summary info ===========================
+FAILED tests/ui/test_ui_smoke.py::test_admin_can_login - assert '/dashboard' in 'http://127.0.0.1:5000/login'
+ +  where 'http://127.0.0.1:5000/login' = <selenium.webdriver.chrome.webdriver.WebDriver (session="bcb039479cd1b41fb951132268a6e803")>.current_url
+FAILED tests/ui/test_ui_smoke.py::test_invalid_firmware_file_is_rejected - selenium.common.exceptions.TimeoutException: Message: 
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+	chromedriver!(No symbol) [0x7ff7e682d57d]
+	chromedriver!(No symbol) [0x7ff7e688767e]
+	chromedriver!(No symbol) [0x7ff7e688798c]
+	chromedriver!(No symbol) [0x7ff7e68d80c7]
+	chromedriver!(No symbol) [0x7ff7e68d4c63]
+	chromedriver!(No symbol) [0x7ff7e6879d58]
+	chromedriver!(No symbol) [0x7ff7e687ac43]
+	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+FAILED tests/ui/test_ui_smoke.py::test_valid_firmware_file_is_validated - selenium.common.exceptions.TimeoutException: Message: 
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+	chromedriver!(No symbol) [0x7ff7e682d57d]
+	chromedriver!(No symbol) [0x7ff7e688767e]
+	chromedriver!(No symbol) [0x7ff7e688798c]
+	chromedriver!(No symbol) [0x7ff7e68d80c7]
+	chromedriver!(No symbol) [0x7ff7e68d4c63]
+	chromedriver!(No symbol) [0x7ff7e6879d58]
+	chromedriver!(No symbol) [0x7ff7e687ac43]
+	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+FAILED tests/ui/test_ui_smoke.py::test_artifact_can_be_registered - selenium.common.exceptions.TimeoutException: Message: 
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+	chromedriver!(No symbol) [0x7ff7e682d57d]
+	chromedriver!(No symbol) [0x7ff7e688767e]
+	chromedriver!(No symbol) [0x7ff7e688798c]
+	chromedriver!(No symbol) [0x7ff7e68d80c7]
+	chromedriver!(No symbol) [0x7ff7e68d4c63]
+	chromedriver!(No symbol) [0x7ff7e6879d58]
+	chromedriver!(No symbol) [0x7ff7e687ac43]
+	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+FAILED tests/ui/test_ui_smoke.py::test_upgrade_job_can_be_run - selenium.common.exceptions.TimeoutException: Message: 
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+	chromedriver!(No symbol) [0x7ff7e682d57d]
+	chromedriver!(No symbol) [0x7ff7e688767e]
+	chromedriver!(No symbol) [0x7ff7e688798c]
+	chromedriver!(No symbol) [0x7ff7e68d80c7]
+	chromedriver!(No symbol) [0x7ff7e68d4c63]
+	chromedriver!(No symbol) [0x7ff7e6879d58]
+	chromedriver!(No symbol) [0x7ff7e687ac43]
+	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+FAILED tests/ui/test_ui_smoke.py::test_stats_page_can_be_opened - selenium.common.exceptions.TimeoutException: Message: 
+Stacktrace:
+	chromedriver!GetHandleVerifier [0x7ff7e6db1e35+2e8d45]
+	chromedriver!GetHandleVerifier [0x7ff7e6ade6c0+155d0]
+	chromedriver!(No symbol) [0x7ff7e682d57d]
+	chromedriver!(No symbol) [0x7ff7e688767e]
+	chromedriver!(No symbol) [0x7ff7e688798c]
+	chromedriver!(No symbol) [0x7ff7e68d80c7]
+	chromedriver!(No symbol) [0x7ff7e68d4c63]
+	chromedriver!(No symbol) [0x7ff7e6879d58]
+	chromedriver!(No symbol) [0x7ff7e687ac43]
+	chromedriver!GetHandleVerifier [0x7ff7e6dddab9+3149c9]
+	chromedriver!GetHandleVerifier [0x7ff7e6dd802b+30ef3b]
+	chromedriver!GetHandleVerifier [0x7ff7e6dfc872+333782]
+	chromedriver!GetHandleVerifier [0x7ff7e6afb785+32695]
+	chromedriver!GetHandleVerifier [0x7ff7e6b042bc+3b1cc]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae7f24+1ee34]
+	chromedriver!GetHandleVerifier [0x7ff7e6ae80b4+1efc4]
+	chromedriver!GetHandleVerifier [0x7ff7e6acbf27+2e37]
+	KERNEL32!BaseThreadInitThunk [0x7ffe4721e8d7+17]
+	ntdll!RtlUserThreadStart [0x7ffe4852c53c+2c]
+============ 6 failed, 2 passed, 1 deselected in 130.95s (0:02:10) ============

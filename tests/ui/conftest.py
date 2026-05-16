@@ -1,11 +1,14 @@
-"""UI test fixtures — requires Flask server running at http://127.0.0.1:5000."""
+"""UI test fixtures — supports local Chrome or remote Selenium via SELENIUM_REMOTE_URL."""
 import os
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 BASE_URL = os.environ.get("BASE_URL", "http://127.0.0.1:5000")
 HEADLESS = os.environ.get("HEADLESS", "1") == "1"
+SELENIUM_REMOTE_URL = os.environ.get("SELENIUM_REMOTE_URL", "")
 SCREENSHOT_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "screenshots")
 
 
@@ -16,6 +19,13 @@ def _make_driver():
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--window-size=1280,900")
+    opts.add_argument("--disable-gpu")
+
+    if SELENIUM_REMOTE_URL:
+        return webdriver.Remote(
+            command_executor=SELENIUM_REMOTE_URL,
+            options=opts,
+        )
     return webdriver.Chrome(options=opts)
 
 
@@ -33,6 +43,7 @@ def logged_in_driver(driver):
     driver.find_element("id", "username").send_keys("admin")
     driver.find_element("id", "password").send_keys("admin123")
     driver.find_element("id", "login-button").click()
+    WebDriverWait(driver, 10).until(lambda d: "/dashboard" in d.current_url)
     yield driver
 
 
@@ -92,5 +103,5 @@ def pytest_configure(config):
         f.write(f"BASE_URL={BASE_URL}\n")
         f.write(f"BROWSER=chrome\n")
         f.write(f"HEADLESS={HEADLESS}\n")
-        f.write(f"SELENIUM_RUNNER=local\n")
-        f.write(f"PLATFORM=Windows\n")
+        f.write(f"SELENIUM_RUNNER={'remote' if SELENIUM_REMOTE_URL else 'local'}\n")
+        f.write(f"PLATFORM={'Docker' if SELENIUM_REMOTE_URL else 'Windows'}\n")

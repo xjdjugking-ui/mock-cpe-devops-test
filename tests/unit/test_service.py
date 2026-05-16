@@ -110,3 +110,36 @@ def test_stats_summary_returns_metrics(svc):
     assert "flaky_rate" in summary
     assert "avg_duration" in summary
     assert summary["total"] >= 1
+
+
+# ------------------------------------------------------------------
+# P0-2: api_check should validate runtime firmware_version
+# ------------------------------------------------------------------
+def test_run_upgrade_job_api_check_equals_1_when_version_matches(svc):
+    """合法固件升级后，api_check 应为 1"""
+    svc.register_artifact({"filename": "cpe_gateway_v4.0.0.bin"})
+    artifacts = svc.list_artifacts()
+    result = svc.run_upgrade_job(artifacts[0]["id"])
+    assert result["ok"] is True
+    assert result["status"] == "passed"
+    assert result["steps"]["api_check"] == 1
+
+
+def test_run_upgrade_job_fails_when_runtime_version_mismatch(svc, monkeypatch):
+    """模拟运行时固件版本与目标版本不一致时，api_check 为 0，任务 FAILED"""
+    svc.register_artifact({"filename": "cpe_gateway_v4.0.0.bin"})
+    artifacts = svc.list_artifacts()
+    # 在 trigger_upgrade 正常执行后，patch fetch_runtime_status 返回不匹配版本
+    original_fetch = svc.adapter.fetch_runtime_status
+
+    def mismatched_runtime():
+        r = original_fetch()
+        r["firmware_version"] = "v3.0.0"
+        return r
+
+    monkeypatch.setattr(svc.adapter, "fetch_runtime_status", mismatched_runtime)
+    result = svc.run_upgrade_job(artifacts[0]["id"])
+    assert result["ok"] is False
+    assert result["status"] == "failed"
+    assert result["steps"]["api_check"] == 0
+    assert "运行版本与目标版本不一致" in (result["failure_reason"] or "")

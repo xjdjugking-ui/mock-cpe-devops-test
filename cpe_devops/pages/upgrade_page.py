@@ -6,7 +6,7 @@ class UpgradePage(BasePage):
         self.driver.get(self._url("/upgrade"))
 
     def validate_firmware(self, filename: str):
-        self._fill("firmware-filename", filename)
+        self._fill(self.sel["firmware_filename"], filename)
         self._click("validate-firmware-button")
 
     def status(self) -> str:

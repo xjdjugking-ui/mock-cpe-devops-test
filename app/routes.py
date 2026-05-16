@@ -70,7 +70,7 @@ def network():
         _svc().update_network(request.form.to_dict())
         message = '网络配置已保存'
     net = _svc().get_network()
-    return render_template('network.html', active='network', net=net, message=message)
+    return render_template('network.html', active='network', config=net, message=message)
 
 
 # ------------------------------------------------------------------
@@ -115,7 +115,7 @@ def artifacts():
         msg_type = 'success' if res['ok'] else 'error'
     artifact_list = _svc().list_artifacts()
     return render_template('artifacts.html', active='artifacts',
-                           artifact_list=artifact_list, message=message, msg_type=msg_type)
+                           artifacts=artifact_list, message=message, msg_type=msg_type)
 
 
 # ------------------------------------------------------------------

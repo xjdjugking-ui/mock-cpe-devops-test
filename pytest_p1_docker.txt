@@ -1,0 +1,137 @@
+﻿docker :  Container mock-cpe Running 
+所在位置 行:1 字符: 1
++ docker compose run --rm test-runner pytest tests -v -m "not demo_fail ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ( Container mock-cpe Running :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+ Container selenium-chrome Running 
+ Container mock-cpe-devops-test-test-runner-run-af87b6374900 Creating 
+ Container mock-cpe-devops-test-test-runner-run-af87b6374900 Created 
+============================= test session starts ==============================
+platform linux -- Python 3.10.20, pytest-8.2.2, pluggy-1.6.0 -- /usr/local/bin/python3.10
+cachedir: .pytest_cache
+metadata: {'Python': '3.10.20', 'Platform': 'Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.41', 'Packages': {'pytest': '8.2.2', 'pluggy': '1.6.0'}, 'Plugins': {'cov': '5.0.0', 'json-report': '1.5.0', 'html': '4.1.1', 'metadata': '3.1.1', 'allure-pytest': '2.13.5'}}
+rootdir: /app
+configfile: pytest.ini
+plugins: cov-5.0.0, json-report-1.5.0, html-4.1.1, metadata-3.1.1, allure-pytest-2.13.5
+collecting ... collected 50 items
+
+tests/api/test_api.py::test_health_api PASSED                            [  2%]
+tests/api/test_api.py::test_readiness_api PASSED                         [  4%]
+tests/api/test_api.py::test_dashboard_api PASSED                         [  6%]
+tests/api/test_api.py::test_get_network_api PASSED                       [  8%]
+tests/api/test_api.py::test_update_network_api PASSED                    [ 10%]
+tests/api/test_api.py::test_validate_valid_firmware_api PASSED           [ 12%]
+tests/api/test_api.py::test_validate_invalid_firmware_api PASSED         [ 14%]
+tests/api/test_api.py::test_get_artifacts_api PASSED                     [ 16%]
+tests/api/test_api.py::test_register_artifact_api PASSED                 [ 18%]
+tests/api/test_api.py::test_register_invalid_artifact_api PASSED         [ 20%]
+tests/api/test_api.py::test_run_upgrade_job_api PASSED                   [ 22%]
+tests/api/test_api.py::test_run_upgrade_job_missing_artifact_id PASSED   [ 24%]
+tests/api/test_api.py::test_get_upgrade_jobs_api PASSED                  [ 26%]
+tests/api/test_api.py::test_experiments_api PASSED                       [ 28%]
+tests/api/test_api.py::test_get_diagnostics_api PASSED                   [ 30%]
+tests/api/test_api.py::test_refresh_diagnostics_api PASSED               [ 32%]
+tests/ui/test_ui_smoke.py::test_admin_can_login PASSED                   [ 34%]
+tests/ui/test_ui_smoke.py::test_login_fails_with_wrong_password PASSED   [ 36%]
+tests/ui/test_ui_smoke.py::test_network_settings_can_be_saved PASSED     [ 38%]
+tests/ui/test_ui_smoke.py::test_invalid_firmware_file_is_rejected PASSED [ 40%]
+tests/ui/test_ui_smoke.py::test_valid_firmware_file_is_validated PASSED  [ 42%]
+tests/ui/test_ui_smoke.py::test_artifact_can_be_registered FAILED        [ 44%]
+tests/ui/test_ui_smoke.py::test_upgrade_job_can_be_run FAILED            [ 46%]
+tests/ui/test_ui_smoke.py::test_stats_page_can_be_opened PASSED          [ 48%]
+tests/ui/test_ui_smoke.py::test_demo_failure_for_screenshot_sample FAILED [ 50%]
+tests/unit/test_device_adapter.py::test_mock_upload_firmware_success PASSED [ 52%]
+tests/unit/test_device_adapter.py::test_mock_upload_firmware_empty_path_fails PASSED [ 54%]
+tests/unit/test_device_adapter.py::test_mock_trigger_upgrade_success PASSED [ 56%]
+tests/unit/test_device_adapter.py::test_mock_trigger_upgrade_empty_version_fails PASSED [ 58%]
+tests/unit/test_device_adapter.py::test_mock_wait_until_online PASSED    [ 60%]
+tests/unit/test_device_adapter.py::test_mock_wait_until_online_custom_timeout PASSED [ 62%]
+tests/unit/test_device_adapter.py::test_mock_fetch_runtime_status PASSED [ 64%]
+tests/unit/test_device_adapter.py::test_mock_reboot_device_success PASSED [ 66%]
+tests/unit/test_device_adapter.py::test_mock_validate_firmware_package_success PASSED [ 68%]
+tests/unit/test_device_adapter.py::test_mock_validate_firmware_package_empty_path_fails PASSED [ 70%]
+tests/unit/test_repository.py::test_database_tables_are_created PASSED   [ 72%]
+tests/unit/test_repository.py::test_singleton_state_can_be_saved_and_loaded PASSED [ 74%]
+tests/unit/test_repository.py::test_activity_can_be_added PASSED         [ 76%]
+tests/unit/test_repository.py::test_artifact_can_be_inserted_and_listed PASSED [ 78%]
+tests/unit/test_repository.py::test_upgrade_job_can_be_inserted_and_listed PASSED [ 80%]
+tests/unit/test_repository.py::test_experiment_run_can_be_inserted_and_listed PASSED [ 82%]
+tests/unit/test_service.py::test_valid_firmware_name_is_accepted PASSED  [ 84%]
+tests/unit/test_service.py::test_invalid_firmware_extension_is_rejected PASSED [ 86%]
+tests/unit/test_service.py::test_invalid_firmware_pattern_is_rejected PASSED [ 88%]
+tests/unit/test_service.py::test_network_config_can_be_saved PASSED      [ 90%]
+tests/unit/test_service.py::test_diagnostics_can_be_refreshed PASSED     [ 92%]
+tests/unit/test_service.py::test_register_artifact_creates_record PASSED [ 94%]
+tests/unit/test_service.py::test_invalid_artifact_is_rejected PASSED     [ 96%]
+tests/unit/test_service.py::test_run_upgrade_job_passes_with_mock_adapter PASSED [ 98%]
+tests/unit/test_service.py::test_stats_summary_returns_metrics PASSED    [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_artifact_can_be_registered ________________________
+tests/ui/test_ui_smoke.py:86: in test_artifact_can_be_registered
+    page.register_artifact(
+cpe_devops/pages/artifacts_page.py:10: in register_artifact
+    self._fill("artifact-filename", filename)
+cpe_devops/base_page.py:25: in _fill
+    el = self._find(By.ID, element_id)
+cpe_devops/base_page.py:19: in _find
+    return self._wait(timeout).until(EC.presence_of_element_located((by, value)))
+/usr/local/lib/python3.10/site-packages/selenium/webdriver/support/wait.py:105: in until
+    raise TimeoutException(message, screen, stacktrace)
+E   selenium.common.exceptions.TimeoutException: Message: 
+E   Stacktrace:
+E   #0 0x579636e87b6a <unknown>
+E   #1 0x579636889265 <unknown>
+E   #2 0x5796368dbf76 <unknown>
+E   #3 0x5796368dc1b1 <unknown>
+E   #4 0x5796369277d4 <unknown>
+E   #5 0x579636924969 <unknown>
+E   #6 0x5796368cf5cf <unknown>
+E   #7 0x5796368d0391 <unknown>
+E   #8 0x579636e4d04b <unknown>
+E   #9 0x579636e5000d <unknown>
+E   #10 0x579636e39808 <unknown>
+E   #11 0x579636e50ba0 <unknown>
+E   #12 0x579636e20280 <unknown>
+E   #13 0x579636e74db8 <unknown>
+E   #14 0x579636e74f88 <unknown>
+E   #15 0x579636e865de <unknown>
+E   #16 0x76507b837aa4 <unknown>
+E   #17 0x76507b8c4a64 __clone
+_________________________ test_upgrade_job_can_be_run __________________________
+tests/ui/test_ui_smoke.py:114: in test_upgrade_job_can_be_run
+    assert msg != ""
+E   AssertionError: assert '' != ''
+___________________ test_demo_failure_for_screenshot_sample ____________________
+tests/ui/test_ui_smoke.py:183: in test_demo_failure_for_screenshot_sample
+    assert "save failed, please retry" in msg, \
+E   AssertionError: expected text to contain 'save failed', but actual message was '鉁?缃戠粶閰嶇疆宸蹭繚瀛?
+E   assert 'save failed, please retry' in '鉁?缃戠粶閰嶇疆宸蹭繚瀛?
+=========================== short test summary info ============================
+FAILED tests/ui/test_ui_smoke.py::test_artifact_can_be_registered - selenium.common.exceptions.TimeoutException: Message: 
+Stacktrace:
+#0 0x579636e87b6a <unknown>
+#1 0x579636889265 <unknown>
+#2 0x5796368dbf76 <unknown>
+#3 0x5796368dc1b1 <unknown>
+#4 0x5796369277d4 <unknown>
+#5 0x579636924969 <unknown>
+#6 0x5796368cf5cf <unknown>
+#7 0x5796368d0391 <unknown>
+#8 0x579636e4d04b <unknown>
+#9 0x579636e5000d <unknown>
+#10 0x579636e39808 <unknown>
+#11 0x579636e50ba0 <unknown>
+#12 0x579636e20280 <unknown>
+#13 0x579636e74db8 <unknown>
+#14 0x579636e74f88 <unknown>
+#15 0x579636e865de <unknown>
+#16 0x76507b837aa4 <unknown>
+#17 0x76507b8c4a64 __clone
+FAILED tests/ui/test_ui_smoke.py::test_upgrade_job_can_be_run - AssertionError: assert '' != ''
+FAILED tests/ui/test_ui_smoke.py::test_demo_failure_for_screenshot_sample - AssertionError: expected text to contain 'save failed', but actual message was '鉁?缃戠粶閰嶇疆宸蹭繚瀛?
+assert 'save failed, please retry' in '鉁?缃戠粶閰嶇疆宸蹭繚瀛?
+======================== 3 failed, 47 passed in 54.36s =========================
+

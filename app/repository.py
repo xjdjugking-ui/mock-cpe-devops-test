@@ -20,6 +20,8 @@ class StateRepository:
     # ------------------------------------------------------------------
     def init_db(self):
         with self._conn() as conn:
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA foreign_keys=ON")
             conn.executescript("""
                 CREATE TABLE IF NOT EXISTS singleton_state (
                     section    TEXT PRIMARY KEY,
@@ -62,7 +64,9 @@ class StateRepository:
                     target_version   TEXT,
                     status           TEXT,
                     upload_ok        INTEGER,
+                    validate_ok      INTEGER DEFAULT 0,
                     trigger_ok       INTEGER,
+                    reboot_ok        INTEGER DEFAULT 0,
                     online_ok        INTEGER,
                     api_check        INTEGER,
                     web_check        INTEGER,
@@ -232,15 +236,18 @@ class StateRepository:
     # upgrade_jobs
     # ------------------------------------------------------------------
     def insert_job(self, data: dict) -> int:
+        data = dict(data)
+        data.setdefault('validate_ok', 0)
+        data.setdefault('reboot_ok', 0)
         with self._conn() as conn:
             cur = conn.execute(
                 """INSERT INTO upgrade_jobs
-                   (artifact_id, target_version, status, upload_ok, trigger_ok,
-                    online_ok, api_check, web_check, duration_seconds,
-                    failure_reason, created_at)
-                   VALUES(:artifact_id,:target_version,:status,:upload_ok,:trigger_ok,
-                          :online_ok,:api_check,:web_check,:duration_seconds,
-                          :failure_reason,:created_at)""",
+                   (artifact_id, target_version, status, upload_ok, validate_ok,
+                    trigger_ok, reboot_ok, online_ok, api_check, web_check,
+                    duration_seconds, failure_reason, created_at)
+                   VALUES(:artifact_id,:target_version,:status,:upload_ok,:validate_ok,
+                          :trigger_ok,:reboot_ok,:online_ok,:api_check,:web_check,
+                          :duration_seconds,:failure_reason,:created_at)""",
                 data,
             )
         return cur.lastrowid

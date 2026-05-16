@@ -1,0 +1,27 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.9.9, pytest-8.2.2, pluggy-1.6.0 -- C:\Users\LPC\mock-cpe-devops-test\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+metadata: {'Python': '3.9.9', 'Platform': 'Windows-10-10.0.26100-SP0', 'Packages': {'pytest': '8.2.2', 'pluggy': '1.6.0'}, 'Plugins': {'allure-pytest': '2.13.5', 'cov': '5.0.0', 'html': '4.1.1', 'json-report': '1.5.0', 'metadata': '3.1.1'}, 'JAVA_HOME': 'D:\\cxdownload\\jdk-8u361-windows-x64.exe'}
+rootdir: C:\Users\LPC\mock-cpe-devops-test
+configfile: pytest.ini
+plugins: allure-pytest-2.13.5, cov-5.0.0, html-4.1.1, json-report-1.5.0, metadata-3.1.1
+collecting ... collected 16 items
+
+tests/api/test_api.py::test_health_api PASSED                            [  6%]
+tests/api/test_api.py::test_readiness_api PASSED                         [ 12%]
+tests/api/test_api.py::test_dashboard_api PASSED                         [ 18%]
+tests/api/test_api.py::test_get_network_api PASSED                       [ 25%]
+tests/api/test_api.py::test_update_network_api PASSED                    [ 31%]
+tests/api/test_api.py::test_validate_valid_firmware_api PASSED           [ 37%]
+tests/api/test_api.py::test_validate_invalid_firmware_api PASSED         [ 43%]
+tests/api/test_api.py::test_get_artifacts_api PASSED                     [ 50%]
+tests/api/test_api.py::test_register_artifact_api PASSED                 [ 56%]
+tests/api/test_api.py::test_register_invalid_artifact_api PASSED         [ 62%]
+tests/api/test_api.py::test_run_upgrade_job_api PASSED                   [ 68%]
+tests/api/test_api.py::test_run_upgrade_job_missing_artifact_id PASSED   [ 75%]
+tests/api/test_api.py::test_get_upgrade_jobs_api PASSED                  [ 81%]
+tests/api/test_api.py::test_experiments_api PASSED                       [ 87%]
+tests/api/test_api.py::test_get_diagnostics_api PASSED                   [ 93%]
+tests/api/test_api.py::test_refresh_diagnostics_api PASSED               [100%]
+
+============================= 16 passed in 4.25s ==============================
