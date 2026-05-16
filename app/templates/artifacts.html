@@ -3,86 +3,143 @@
 {% block page_title %}固件制品管理{% endblock %}
 
 {% block content %}
+
 {% if message %}
-  {% if msg_type == 'success' %}
-  <div class="alert alert-success" id="artifact-message">
-    <span>✓</span> {{ message }}
-  </div>
-  {% else %}
-  <div class="alert alert-error" id="artifact-message">
-    <span>✗</span> {{ message }}
-  </div>
-  {% endif %}
+<div id="artifact-message" class="alert {% if msg_type == 'error' %}alert-danger{% else %}alert-success{% endif %}">
+  {% if msg_type == 'error' %}&#9888;{% else %}&#10003;{% endif %} {{ message }}
+</div>
+{% else %}
+<div id="artifact-message" class="hidden"></div>
 {% endif %}
 
-<div class="form-card">
-  <div class="form-title">登记固件制品</div>
-  <form method="POST" action="/artifacts">
-    <div class="form-grid">
-      <div class="form-group">
-        <label class="form-label" for="artifact-filename">固件文件名</label>
-        <input class="form-control" type="text" id="artifact-filename" name="filename"
-               placeholder="cpe_gateway_v1.2.3.bin" required>
+<div class="col-7-5 section-gap">
+
+  <!-- Registration Form -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">&#9723; 注册新制品</div>
+    </div>
+    <form method="POST" action="/artifacts">
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label class="form-label" for="artifact-filename">文件名</label>
+          <input id="artifact-filename" name="filename" type="text"
+                 placeholder="cpe_gateway_v1.2.3.bin">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="artifact-source-type">来源类型</label>
+          <select id="artifact-source-type" name="source_type">
+            <option value="local">Local 本地</option>
+            <option value="ci">CI 持续集成</option>
+            <option value="manual">Manual 手动</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="artifact-source-ref">来源引用</label>
+          <input id="artifact-source-ref" name="source_ref" type="text"
+                 placeholder="build-123 / commit-abc">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="artifact-path">本地路径</label>
+          <input id="artifact-path" name="local_path" type="text"
+                 placeholder="/artifacts/cpe_gateway_v1.2.3.bin">
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label" for="artifact-note">备注</label>
+          <input id="artifact-note" name="note" type="text"
+                 placeholder="可选备注信息">
+        </div>
+
       </div>
-      <div class="form-group">
-        <label class="form-label" for="artifact-source-type">来源类型</label>
-        <select class="form-control" id="artifact-source-type" name="source_type" required>
-          <option value="local">本地</option>
-          <option value="ci">CI 构建</option>
-          <option value="manual">手动上传</option>
-        </select>
+      <div class="mt-4">
+        <button id="register-artifact-button" type="submit" class="btn btn-primary">
+          &#10003; 注册制品
+        </button>
       </div>
-      <div class="form-group">
-        <label class="form-label" for="artifact-source-ref">来源引用</label>
-        <input class="form-control" type="text" id="artifact-source-ref" name="source_ref"
-               placeholder="commit id 或 build id">
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="artifact-path">本地路径</label>
-        <input class="form-control" type="text" id="artifact-path" name="local_path"
-               placeholder="/opt/firmware/...">
-      </div>
-      <div class="form-group full">
-        <label class="form-label" for="artifact-note">备注</label>
-        <input class="form-control" type="text" id="artifact-note" name="note"
-               placeholder="可选备注">
+    </form>
+  </div>
+
+  <!-- Info Side Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">&#9432; 制品说明</div>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">总制品数</span>
+      <span class="summary-value">{{ artifacts|length }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">Local</span>
+      <span class="summary-value">{{ artifacts|selectattr('source_type','equalto','local')|list|length }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">CI</span>
+      <span class="summary-value">{{ artifacts|selectattr('source_type','equalto','ci')|list|length }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">Manual</span>
+      <span class="summary-value">{{ artifacts|selectattr('source_type','equalto','manual')|list|length }}</span>
+    </div>
+    <div class="mt-4 info-banner" style="margin-bottom:0;">
+      <div class="info-banner-icon">&#9432;</div>
+      <div>
+        <div class="info-banner-title">Mock 模式</div>
+        <div class="info-banner-text">制品数据保存在内存中，重启后清空。</div>
       </div>
     </div>
-    <button class="btn btn-primary mt-24" type="submit" id="register-artifact-button">
-      登 记 制 品
-    </button>
-  </form>
+  </div>
+
 </div>
 
+<!-- Artifacts Table -->
 <div class="card">
-  <div class="card-title">已登记制品列表</div>
-  <div class="table-wrap">
-    <table id="artifact-table">
-      <thead>
-        <tr>
-          <th>文件名</th>
-          <th>版本</th>
-          <th>来源类型</th>
-          <th>文件大小</th>
-          <th>MD5</th>
-          <th>创建时间</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for art in artifact_list %}
-        <tr>
-          <td>{{ art.filename }}</td>
-          <td>v{{ art.version }}</td>
-          <td><span class="badge badge-info">{{ art.source_type }}</span></td>
-          <td>{{ (art.size_bytes / 1024 / 1024) | round(1) }} MB</td>
-          <td class="text-mono truncate">{{ art.md5[:12] }}...</td>
-          <td class="text-mono">{{ art.created_at }}</td>
-        </tr>
-        {% else %}
-        <tr><td colspan="6" style="text-align: center; color: #999;">暂无制品</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="card-header">
+    <div class="card-title">&#9723; 制品列表</div>
+    <span class="badge badge-info">{{ artifacts|length }} 条记录</span>
   </div>
+  <table class="data-table" id="artifact-table">
+    <thead>
+      <tr>
+        <th>文件名</th>
+        <th>版本</th>
+        <th>来源类型</th>
+        <th>大小</th>
+        <th>MD5</th>
+        <th>创建时间</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if artifacts %}
+        {% for a in artifacts %}
+        <tr>
+          <td class="mono">{{ a.filename }}</td>
+          <td>{{ a.version }}</td>
+          <td>
+            {% if a.source_type == 'ci' %}
+              <span class="badge badge-info">CI</span>
+            {% elif a.source_type == 'manual' %}
+              <span class="badge badge-warning">Manual</span>
+            {% else %}
+              <span class="badge badge-muted">Local</span>
+            {% endif %}
+          </td>
+          <td>{{ a.size }}</td>
+          <td class="mono" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ a.md5 }}">{{ a.md5[:12] if a.md5 else '—' }}...</td>
+          <td class="text-muted">{{ a.created_at }}</td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="6" class="table-empty">暂无制品记录，请注册第一个固件制品</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
 </div>
+
 {% endblock %}

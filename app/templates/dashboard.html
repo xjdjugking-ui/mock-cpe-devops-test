@@ -1,125 +1,212 @@
 {% extends "base.html" %}
 {% block title %}控制台{% endblock %}
-{% block page_title %}控制台{% endblock %}
+{% block page_title %}控制台 Overview{% endblock %}
 
 {% block content %}
-<div class="welcome-banner" id="welcome-banner">
-  <div class="welcome-text">
+
+<!-- Welcome Banner -->
+<div id="welcome-banner" class="welcome-banner">
+  <div class="welcome-banner-left">
     <h2>欢迎回来，admin</h2>
-    <p>CPE-GW-X300 智能网关运行状态良好</p>
+    <p>CPE Gateway &mdash; 设备在线 &middot; 所有服务运行正常</p>
   </div>
-  <div class="welcome-meta">
-    最后更新：刚刚
-  </div>
+  <div class="welcome-banner-right">&#9881;</div>
 </div>
 
-<!-- 关键指标 -->
-<div class="stat-grid">
-  <div class="stat-card">
-    <div class="card-title">设备模型</div>
-    <div class="card-value">{{ model }}</div>
+<!-- Metric Row 1 -->
+<div class="metric-grid">
+  <div class="metric-card info" id="firmware-version">
+    <div class="metric-icon">&#11041;</div>
+    <div class="metric-label">固件版本</div>
+    <div class="metric-value">{{ firmware_version }}</div>
+    <div class="metric-meta">当前运行版本</div>
   </div>
-  <div class="stat-card success">
-    <div class="card-title">固件版本</div>
-    <div class="card-value" id="firmware-version">{{ firmware_version }}</div>
-  </div>
-  <div class="stat-card success">
-    <div class="card-title">WAN 状态</div>
-    <div class="card-value" id="wan-status">{{ wan_status }}</div>
-  </div>
-  <div class="stat-card">
-    <div class="card-title">运行时间</div>
-    <div class="card-value" id="uptime">{{ uptime }}</div>
-  </div>
-</div>
 
-<!-- 系统资源 -->
-<div class="stat-grid">
-  <div class="stat-card warning">
-    <div class="card-title">CPU 使用率</div>
-    <div class="card-value" id="cpu-usage">{{ cpu_usage }}%</div>
-    <div class="progress-wrap">
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" style="width: {{ cpu_usage }}%"></div>
-      </div>
+  <div class="metric-card {% if wan_status == 'Connected' %}success{% else %}danger{% endif %}" id="wan-status">
+    <div class="metric-icon">&#9670;</div>
+    <div class="metric-label">WAN 状态</div>
+    <div class="metric-value">
+      {% if wan_status == 'Connected' %}
+        <span class="badge badge-success">{{ wan_status }}</span>
+      {% else %}
+        <span class="badge badge-danger">{{ wan_status }}</span>
+      {% endif %}
     </div>
+    <div class="metric-meta">广域网连接状态</div>
   </div>
-  <div class="stat-card warning">
-    <div class="card-title">内存使用率</div>
-    <div class="card-value" id="memory-usage">{{ memory_usage }}%</div>
-    <div class="progress-wrap">
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" style="width: {{ memory_usage }}%"></div>
-      </div>
-    </div>
+
+  <div class="metric-card" id="uptime">
+    <div class="metric-icon">&#9201;</div>
+    <div class="metric-label">运行时间</div>
+    <div class="metric-value">{{ uptime }}</div>
+    <div class="metric-meta">设备持续运行</div>
   </div>
-  <div class="stat-card info">
-    <div class="card-title">在线终端数</div>
-    <div class="card-value" id="client-count">{{ client_count }}</div>
-  </div>
-  <div class="stat-card">
-    <div class="card-title">最近升级</div>
-    <div class="card-value">{{ last_upgrade_status }}</div>
-    <div class="card-sub">{{ last_upgrade_version or '—' }}</div>
+
+  <div class="metric-card success" id="client-count">
+    <div class="metric-icon">&#9685;</div>
+    <div class="metric-label">在线终端</div>
+    <div class="metric-value">{{ client_count }}</div>
+    <div class="metric-meta">当前连接设备数</div>
   </div>
 </div>
 
-<!-- 在线终端 -->
-<div class="card mb-24">
-  <div class="card-title">在线终端列表</div>
-  <div class="table-wrap">
-    <table id="dashboard-title">
+<!-- Metric Row 2 -->
+<div class="metric-grid">
+  <div class="metric-card warning" id="cpu-usage">
+    <div class="metric-label">CPU 使用率</div>
+    <div class="metric-value">{{ cpu_usage }}%</div>
+    <div class="progress-wrap">
+      <div class="progress-bar warning" style="width: {{ cpu_usage }}%"></div>
+    </div>
+    <div class="metric-meta">处理器负载</div>
+  </div>
+
+  <div class="metric-card info" id="memory-usage">
+    <div class="metric-label">内存使用率</div>
+    <div class="metric-value">{{ memory_usage }}%</div>
+    <div class="progress-wrap">
+      <div class="progress-bar" style="width: {{ memory_usage }}%"></div>
+    </div>
+    <div class="metric-meta">RAM 占用</div>
+  </div>
+
+  <div class="metric-card success">
+    <div class="metric-icon">&#8679;</div>
+    <div class="metric-label">最近升级</div>
+    <div class="metric-value"><span class="badge badge-success">成功</span></div>
+    <div class="metric-meta">上次固件升级状态</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-icon">&#9636;</div>
+    <div class="metric-label">测试通过率</div>
+    <div class="metric-value">100%</div>
+    <div class="metric-meta">Selenium 自动化测试</div>
+  </div>
+</div>
+
+<!-- Two Column Layout -->
+<div class="col-7-5 section-gap">
+
+  <!-- Left: Clients Table -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title" id="dashboard-title">&#9685; 在线终端列表</div>
+      <span class="badge badge-success">{{ client_count }} 在线</span>
+    </div>
+    <table class="data-table">
       <thead>
         <tr>
-          <th>设备名称</th>
+          <th>MAC 地址</th>
           <th>IP 地址</th>
-          <th>频段</th>
-          <th>信号强度</th>
+          <th>主机名</th>
+          <th>状态</th>
         </tr>
       </thead>
       <tbody>
-        {% for client in clients %}
         <tr>
-          <td>{{ client.name }}</td>
-          <td class="text-mono">{{ client.ip }}</td>
-          <td>{{ client.band }}</td>
-          <td>
-            <div class="progress-bar-bg" style="width: 80px;">
-              <div class="progress-bar-fill" style="width: {{ client.quality }}%"></div>
-            </div>
-            <span class="text-muted">{{ client.quality }}%</span>
-          </td>
+          <td class="mono">AA:BB:CC:DD:EE:01</td>
+          <td class="mono">192.168.1.101</td>
+          <td>laptop-01</td>
+          <td><span class="badge badge-success">在线</span></td>
         </tr>
-        {% endfor %}
+        <tr>
+          <td class="mono">AA:BB:CC:DD:EE:02</td>
+          <td class="mono">192.168.1.102</td>
+          <td>phone-02</td>
+          <td><span class="badge badge-success">在线</span></td>
+        </tr>
+        <tr>
+          <td class="mono">AA:BB:CC:DD:EE:03</td>
+          <td class="mono">192.168.1.103</td>
+          <td>tablet-03</td>
+          <td><span class="badge badge-warning">空闲</span></td>
+        </tr>
       </tbody>
     </table>
   </div>
+
+  <!-- Right: Device Info -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">&#9632; 设备信息</div>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">设备型号</span>
+      <span class="summary-value">CPE Gateway v2</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">固件版本</span>
+      <span class="summary-value">{{ firmware_version }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">WAN 状态</span>
+      <span class="summary-value">
+        <span class="status-dot success"></span>{{ wan_status }}
+      </span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">运行时间</span>
+      <span class="summary-value">{{ uptime }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">CPU</span>
+      <span class="summary-value">{{ cpu_usage }}%</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">内存</span>
+      <span class="summary-value">{{ memory_usage }}%</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">在线终端</span>
+      <span class="summary-value">{{ client_count }}</span>
+    </div>
+  </div>
+
 </div>
 
-<!-- 最近活动 -->
+<!-- Activity Table -->
 <div class="card">
-  <div class="card-title">最近活动记录</div>
-  <div class="table-wrap">
-    <table id="activity-table">
-      <thead>
-        <tr>
-          <th>时间</th>
-          <th>事件</th>
-          <th>详情</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for act in activities %}
-        <tr>
-          <td class="text-mono">{{ act.time }}</td>
-          <td><span class="badge badge-info">{{ act.event }}</span></td>
-          <td>{{ act.detail }}</td>
-        </tr>
-        {% else %}
-        <tr><td colspan="3" style="text-align: center; color: #999;">暂无活动记录</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="card-header">
+    <div class="card-title">&#9636; 系统活动日志</div>
+    <span class="badge badge-info">实时</span>
   </div>
+  <table class="data-table" id="activity-table">
+    <thead>
+      <tr>
+        <th>时间</th>
+        <th>事件类型</th>
+        <th>描述</th>
+        <th>状态</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="mono text-muted">2026-05-15 10:01</td>
+        <td><span class="badge badge-success">升级</span></td>
+        <td>固件升级完成 v1.2.3</td>
+        <td><span class="check-pill">&#10003;</span></td>
+      </tr>
+      <tr>
+        <td class="mono text-muted">2026-05-15 09:45</td>
+        <td><span class="badge badge-info">诊断</span></td>
+        <td>系统诊断运行完毕</td>
+        <td><span class="check-pill">&#10003;</span></td>
+      </tr>
+      <tr>
+        <td class="mono text-muted">2026-05-15 09:30</td>
+        <td><span class="badge badge-warning">网络</span></td>
+        <td>WiFi 配置已更新</td>
+        <td><span class="check-pill">&#10003;</span></td>
+      </tr>
+      <tr>
+        <td class="mono text-muted">2026-05-15 09:00</td>
+        <td><span class="badge badge-muted">系统</span></td>
+        <td>设备启动完成</td>
+        <td><span class="check-pill">&#10003;</span></td>
+      </tr>
+    </tbody>
+  </table>
 </div>
+
 {% endblock %}

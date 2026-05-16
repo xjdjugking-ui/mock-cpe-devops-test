@@ -3,57 +3,120 @@
 {% block page_title %}网络配置{% endblock %}
 
 {% block content %}
+
 {% if message %}
-<div class="alert alert-success" id="network-message">
-  <span>✓</span> {{ message }}
+<div id="network-message" class="alert alert-success">
+  &#10003; {{ message }}
 </div>
+{% else %}
+<div id="network-message" class="hidden"></div>
 {% endif %}
 
-<div class="form-card">
-  <div class="form-title">Wi-Fi 基本设置</div>
-  <form method="POST" action="/network">
-    <div class="form-grid">
-      <div class="form-group">
-        <label class="form-label" for="ssid">SSID</label>
-        <input class="form-control" type="text" id="ssid" name="ssid"
-               value="{{ net.ssid }}" required>
+<div class="col-7-5">
+
+  <!-- Left: Config Form -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">&#9670; 网络参数配置</div>
+    </div>
+    <form method="POST" action="/network">
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label class="form-label" for="ssid">WiFi 名称 (SSID)</label>
+          <input id="ssid" name="ssid" type="text" value="{{ config.ssid if config else '' }}" placeholder="请输入 SSID">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="wifi-password">WiFi 密码</label>
+          <input id="wifi-password" name="wifi_password" type="text" value="{{ config.wifi_password if config else '' }}" placeholder="请输入 WiFi 密码">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="mode">WAN 模式</label>
+          <select id="mode" name="mode">
+            <option value="dhcp" {% if config and config.mode == 'dhcp' %}selected{% endif %}>DHCP 自动获取</option>
+            <option value="pppoe" {% if config and config.mode == 'pppoe' %}selected{% endif %}>PPPoE 拨号</option>
+            <option value="static" {% if config and config.mode == 'static' %}selected{% endif %}>Static 静态 IP</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="channel">无线信道</label>
+          <select id="channel" name="channel">
+            <option value="1"  {% if config and config.channel|string == '1'  %}selected{% endif %}>信道 1 (2.4GHz)</option>
+            <option value="6"  {% if config and config.channel|string == '6'  %}selected{% endif %}>信道 6 (2.4GHz)</option>
+            <option value="11" {% if config and config.channel|string == '11' %}selected{% endif %}>信道 11 (2.4GHz)</option>
+            <option value="36" {% if config and config.channel|string == '36' %}selected{% endif %}>信道 36 (5GHz)</option>
+            <option value="40" {% if config and config.channel|string == '40' %}selected{% endif %}>信道 40 (5GHz)</option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">访客 WiFi</label>
+          <div class="checkbox-row">
+            <input id="guest-wifi" name="guest_wifi" type="checkbox" {% if config and config.guest_wifi %}checked{% endif %}>
+            <label for="guest-wifi" style="font-size:13px;color:var(--text-primary);">启用访客 WiFi 网络</label>
+          </div>
+        </div>
+
       </div>
-      <div class="form-group">
-        <label class="form-label" for="wifi-password">Wi-Fi 密码</label>
-        <input class="form-control" type="text" id="wifi-password" name="wifi_password"
-               value="{{ net.wifi_password }}" required>
+
+      <div class="mt-4">
+        <button id="save-network-button" type="submit" class="btn btn-primary">
+          &#10003; 保存配置
+        </button>
       </div>
-      <div class="form-group">
-        <label class="form-label" for="mode">联网模式</label>
-        <select class="form-control" id="mode" name="mode" required>
-          <option value="dhcp" {% if net.mode=='dhcp' %}selected{% endif %}>DHCP</option>
-          <option value="pppoe" {% if net.mode=='pppoe' %}selected{% endif %}>PPPoE</option>
-          <option value="static" {% if net.mode=='static' %}selected{% endif %}>静态 IP</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="channel">Wi-Fi 信道</label>
-        <select class="form-control" id="channel" name="channel" required>
-          <option value="1" {% if net.channel=='1' %}selected{% endif %}>1 (2.4GHz)</option>
-          <option value="6" {% if net.channel=='6' %}selected{% endif %}>6 (2.4GHz)</option>
-          <option value="11" {% if net.channel=='11' %}selected{% endif %}>11 (2.4GHz)</option>
-          <option value="36" {% if net.channel=='36' %}selected{% endif %}>36 (5GHz)</option>
-          <option value="40" {% if net.channel=='40' %}selected{% endif %}>40 (5GHz)</option>
-        </select>
-      </div>
+    </form>
+  </div>
+
+  <!-- Right: Current Config Summary -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">&#9632; 当前配置</div>
+      <span class="badge badge-success">运行中</span>
     </div>
 
-    <div class="form-grid mt-24" style="grid-template-columns: 1fr;">
-      <div class="check-row">
-        <input type="checkbox" id="guest-wifi" name="guest_wifi" value="on"
-               {% if net.guest_wifi %}checked{% endif %}>
-        <label for="guest-wifi">启用访客 Wi-Fi</label>
-      </div>
+    <div class="summary-row">
+      <span class="summary-key">SSID</span>
+      <span class="summary-value">{{ config.ssid if config else '—' }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">WiFi 密码</span>
+      <span class="summary-value">{{ config.wifi_password if config else '—' }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">WAN 模式</span>
+      <span class="summary-value">
+        {% if config %}
+          <span class="badge badge-info">{{ config.mode | upper }}</span>
+        {% else %}—{% endif %}
+      </span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">无线信道</span>
+      <span class="summary-value">{{ config.channel if config else '—' }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">访客 WiFi</span>
+      <span class="summary-value">
+        {% if config and config.guest_wifi %}
+          <span class="check-pill">&#10003;</span> 已启用
+        {% else %}
+          <span class="cross-pill">&#10007;</span> 已禁用
+        {% endif %}
+      </span>
     </div>
 
-    <button class="btn btn-primary mt-24" type="submit" id="save-network-button">
-      保 存 配 置
-    </button>
-  </form>
+    <div class="mt-4 info-banner">
+      <div class="info-banner-icon">&#9432;</div>
+      <div>
+        <div class="info-banner-title">Mock 模式</div>
+        <div class="info-banner-text">配置保存至内存，重启后恢复默认值。</div>
+      </div>
+    </div>
+  </div>
+
 </div>
+
 {% endblock %}

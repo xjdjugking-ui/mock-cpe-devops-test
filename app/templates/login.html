@@ -3,47 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>登录 — CPE Gateway Management Console</title>
+  <title>登录 — CPE DevOps Console</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<div class="login-page">
-  <div class="login-box">
+<div class="login-shell">
 
-    <div class="login-logo">
-      <div class="login-logo-icon">G</div>
-      <div class="login-logo-title">CPE Gateway Console</div>
-      <div class="login-logo-sub">智能网关 Web 管理平台</div>
-    </div>
+  <!-- Left Brand Panel -->
+  <div class="login-brand">
+    <div class="login-brand-icon">&#9881;</div>
+    <h1>CPE DevOps Platform</h1>
+    <p>Continuous Testing Console</p>
+    <ul class="login-features">
+      <li>Selenium 自动化测试</li>
+      <li>Pytest 测试框架</li>
+      <li>Jenkins 持续集成</li>
+      <li>Allure 测试报告</li>
+    </ul>
+    <span class="login-mock-badge">Mock Mode &middot; No Real Hardware Required</span>
+  </div>
 
-    {% if error %}
-    <div class="login-error" id="login-error">
-      <span>⚠</span> {{ error }}
-    </div>
-    {% else %}
-    <div id="login-error" style="display:none;"></div>
-    {% endif %}
+  <!-- Right Login Card -->
+  <div class="login-right">
+    <div class="login-card">
+      <div class="login-card-title">管理员登录</div>
+      <div class="login-card-sub">CPE Gateway Management Console</div>
 
-    <form method="POST" action="/login" class="login-form">
-      <div class="form-group">
-        <label class="form-label" for="username">用户名</label>
-        <input class="form-control" type="text" id="username" name="username"
-               placeholder="请输入用户名" autocomplete="username" required>
+      {% if error %}
+      <div id="login-error" class="alert alert-danger">
+        &#9888; {{ error }}
       </div>
-      <div class="form-group">
-        <label class="form-label" for="password">密码</label>
-        <input class="form-control" type="password" id="password" name="password"
-               placeholder="请输入密码" autocomplete="current-password" required>
-      </div>
-      <button class="btn btn-primary btn-lg login-btn" type="submit" id="login-button">
-        登 录
-      </button>
-    </form>
+      {% else %}
+      <div id="login-error" class="hidden"></div>
+      {% endif %}
 
-    <div class="login-footer">
-      CPE-GW-X300 &nbsp;·&nbsp; DevOps 持续交付测试平台 &nbsp;·&nbsp; Mock v1.0
+      <form class="login-form" method="POST" action="/login">
+        <div class="form-group">
+          <label class="form-label" for="username">用户名</label>
+          <input id="username" name="username" type="text" placeholder="请输入用户名" autocomplete="username" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">密码</label>
+          <input id="password" name="password" type="password" placeholder="请输入密码" autocomplete="current-password" required>
+        </div>
+        <button id="login-button" type="submit" class="btn btn-primary login-submit">
+          &#9654; 登录
+        </button>
+      </form>
+
+      <div class="login-footer">
+        Mock Mode &middot; Local Jenkins &middot; Automated Testing
+      </div>
     </div>
   </div>
+
 </div>
 </body>
 </html>

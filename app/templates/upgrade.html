@@ -3,56 +3,94 @@
 {% block page_title %}固件升级校验{% endblock %}
 
 {% block content %}
+
 {% if result %}
-  {% if result.status == 'validated' %}
-  <div class="alert alert-success" id="upgrade-message">
-    <span>✓</span> {{ result.message }}
-  </div>
-  {% else %}
-  <div class="alert alert-error" id="upgrade-message">
-    <span>✗</span> {{ result.message }}
-  </div>
-  {% endif %}
+<div id="upgrade-message" class="alert {% if result.status == 'validated' %}alert-success{% else %}alert-danger{% endif %}">
+  {% if result.status == 'validated' %}&#10003;{% else %}&#9888;{% endif %} {{ result.message }}
+</div>
+{% else %}
+<div id="upgrade-message" class="hidden"></div>
 {% endif %}
 
-<div class="form-card">
-  <div class="form-title">固件文件校验</div>
-  <form method="POST" action="/upgrade">
-    <div class="form-grid">
-      <div class="form-group full">
-        <label class="form-label" for="firmware-filename">固件文件名</label>
-        <input class="form-control" type="text" id="firmware-filename" name="firmware-filename"
-               placeholder="示例：cpe_gateway_v1.2.3.bin" required>
-        <div class="form-hint">合法格式：cpe_gateway_vX.Y.Z.bin（X、Y、Z 为数字）</div>
-      </div>
+<!-- Info Banner -->
+<div class="info-banner">
+  <div class="info-banner-icon">&#9432;</div>
+  <div>
+    <div class="info-banner-title">Firmware Quality Gate</div>
+    <div class="info-banner-text">
+      上传固件文件名须符合命名规范，系统将自动校验版本号格式与完整性。
+      格式要求：<strong>cpe_gateway_vX.Y.Z.bin</strong>
     </div>
-    <button class="btn btn-primary mt-24" type="submit" id="validate-firmware-button">
-      校 验 固 件
-    </button>
-  </form>
+  </div>
 </div>
 
-{% if result %}
-<div class="card mt-24">
-  <div class="card-title">校验结果</div>
-  <div style="padding: 14px 0;">
-    <div class="flex-between mb-16">
-      <span class="text-secondary">状态</span>
-      <span>
-        {% if result.status == 'validated' %}
-        <span class="badge badge-success" id="upgrade-status">已验证</span>
-        {% else %}
-        <span class="badge badge-danger" id="upgrade-status">已拒绝</span>
-        {% endif %}
+<!-- Upload Form -->
+<div class="col-7-5">
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">&#8679; 固件文件校验</div>
+    </div>
+    <form method="POST" action="/upgrade">
+      <div class="form-group">
+        <label class="form-label" for="firmware-filename">固件文件名</label>
+        <input id="firmware-filename" name="firmware-filename" type="text"
+               placeholder="cpe_gateway_v1.2.3.bin"
+               value="{{ result.filename if result else '' }}"
+               style="font-size:15px; padding:12px 14px;">
+        <div class="hint">格式：cpe_gateway_vX.Y.Z.bin &nbsp;&middot;&nbsp; 例：cpe_gateway_v2.1.0.bin</div>
+      </div>
+      <div class="mt-4">
+        <button id="validate-firmware-button" type="submit" class="btn btn-primary">
+          &#9654; 校验固件
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Result Card -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">&#9636; 校验结果</div>
+    </div>
+
+    {% if result %}
+    <div class="summary-row">
+      <span class="summary-key">文件名</span>
+      <span class="summary-value mono">{{ result.filename }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">校验状态</span>
+      <span class="summary-value">
+        <span id="upgrade-status" class="badge {% if result.status == 'validated' %}badge-success{% else %}badge-danger{% endif %}">
+          {% if result.status == 'validated' %}已验证{% else %}已拒绝{% endif %}
+        </span>
       </span>
     </div>
-    {% if result.version %}
-    <div class="flex-between">
-      <span class="text-secondary">版本号</span>
-      <span class="text-mono">v{{ result.version }}</span>
+    {% if result.status == 'validated' %}
+    <div class="summary-row">
+      <span class="summary-key">版本号</span>
+      <span class="summary-value">{{ result.version }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">文件格式</span>
+      <span class="summary-value"><span class="check-pill">&#10003;</span> 合规</span>
+    </div>
+    {% else %}
+    <div class="summary-row">
+      <span class="summary-key">拒绝原因</span>
+      <span class="summary-value" style="color:var(--danger);">文件名格式不符合规范</span>
+    </div>
+    {% endif %}
+    {% else %}
+    <div id="upgrade-status" class="hidden"></div>
+    <div style="text-align:center; padding:32px; color:var(--text-muted);">
+      <div style="font-size:32px; margin-bottom:10px;">&#9432;</div>
+      <div>请输入固件文件名并点击校验</div>
     </div>
     {% endif %}
   </div>
+
 </div>
-{% endif %}
+
 {% endblock %}

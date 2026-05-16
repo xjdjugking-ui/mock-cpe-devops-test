@@ -3,51 +3,141 @@
 {% block page_title %}运行诊断{% endblock %}
 
 {% block content %}
+
 {% if message %}
-<div class="alert alert-success" id="diagnostics-message">
-  <span>✓</span> {{ message }}
+<div id="diagnostics-message" class="alert alert-info">
+  &#9432; {{ message }}
 </div>
+{% else %}
+<div id="diagnostics-message" class="hidden"></div>
 {% endif %}
 
-<form method="POST" action="/diagnostics" style="margin-bottom: 24px;">
-  <button class="btn btn-primary" type="submit" id="refresh-diagnostics-button">
-    刷 新 诊 断
-  </button>
-</form>
+<!-- Main Diagnostics Card -->
+<div class="card section-gap" id="diagnostics-title">
+  <div class="card-header">
+    <div class="card-title">&#9741; 系统诊断概览</div>
+    <form method="POST" action="/diagnostics" style="margin:0;">
+      <button id="refresh-diagnostics-button" type="submit" class="btn btn-primary">
+        &#8635; 刷新诊断
+      </button>
+    </form>
+  </div>
 
-<div class="card" id="diagnostics-title">
-  <div class="card-title">诊断结果</div>
-
+  <!-- 4 Diag Status Cards -->
   <div class="diag-grid">
+
     <div class="diag-card">
-      <div class="diag-icon">🔵</div>
-      <div class="diag-label">Ping 检查</div>
-      <div class="diag-value diag-ok" id="ping-status">
-        {% if diag.ping == 'ok' %}✓ OK{% else %}✗ FAIL{% endif %}
+      <div class="diag-icon">&#9670;</div>
+      <div class="diag-label">Ping 检测</div>
+      <div class="diag-value">
+        <span id="ping-status" class="badge {% if diag.ping == 'ok' %}badge-success{% else %}badge-danger{% endif %}">
+          {% if diag.ping == 'ok' %}正常{% else %}{{ diag.ping }}{% endif %}
+        </span>
       </div>
     </div>
 
     <div class="diag-card">
-      <div class="diag-icon">🔷</div>
-      <div class="diag-label">DNS 检查</div>
-      <div class="diag-value diag-ok" id="dns-status">
-        {% if diag.dns == 'ok' %}✓ OK{% else %}✗ FAIL{% endif %}
+      <div class="diag-icon">&#9632;</div>
+      <div class="diag-label">DNS 解析</div>
+      <div class="diag-value">
+        <span id="dns-status" class="badge {% if diag.dns == 'ok' %}badge-success{% else %}badge-danger{% endif %}">
+          {% if diag.dns == 'ok' %}正常{% else %}{{ diag.dns }}{% endif %}
+        </span>
       </div>
     </div>
 
     <div class="diag-card">
-      <div class="diag-icon">☁</div>
-      <div class="diag-label">云端连通性</div>
-      <div class="diag-value diag-ok" id="cloud-status">
-        {% if diag.cloud == 'ok' %}✓ OK{% else %}✗ FAIL{% endif %}
+      <div class="diag-icon">&#9729;</div>
+      <div class="diag-label">云端连接</div>
+      <div class="diag-value">
+        <span id="cloud-status" class="badge {% if diag.cloud == 'ok' %}badge-success{% else %}badge-danger{% endif %}">
+          {% if diag.cloud == 'ok' %}正常{% else %}{{ diag.cloud }}{% endif %}
+        </span>
       </div>
     </div>
 
     <div class="diag-card">
-      <div class="diag-icon">📊</div>
+      <div class="diag-icon">&#9636;</div>
       <div class="diag-label">丢包率</div>
-      <div class="diag-value" id="packet-loss">{{ diag.packet_loss }}%</div>
+      <div class="diag-value">
+        <span id="packet-loss">{{ diag.packet_loss }}%</span>
+      </div>
+      <div class="progress-wrap" style="margin-top:10px;">
+        <div class="progress-bar {% if diag.packet_loss|int > 5 %}danger{% elif diag.packet_loss|int > 1 %}warning{% else %}success{% endif %}"
+             style="width: {{ [diag.packet_loss|int, 100]|min }}%"></div>
+      </div>
     </div>
+
   </div>
 </div>
+
+<!-- Detail Cards -->
+<div class="two-col">
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">&#9670; 网络连通性</div>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">Ping 网关</span>
+      <span class="summary-value">
+        {% if diag.ping == 'ok' %}
+          <span class="check-pill">&#10003;</span> 正常
+        {% else %}
+          <span class="cross-pill">&#10007;</span> 异常
+        {% endif %}
+      </span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">DNS 解析</span>
+      <span class="summary-value">
+        {% if diag.dns == 'ok' %}
+          <span class="check-pill">&#10003;</span> 正常
+        {% else %}
+          <span class="cross-pill">&#10007;</span> 异常
+        {% endif %}
+      </span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">云端连接</span>
+      <span class="summary-value">
+        {% if diag.cloud == 'ok' %}
+          <span class="check-pill">&#10003;</span> 正常
+        {% else %}
+          <span class="cross-pill">&#10007;</span> 异常
+        {% endif %}
+      </span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">丢包率</span>
+      <span class="summary-value">{{ diag.packet_loss }}%</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">&#9636; 诊断说明</div>
+    </div>
+    <div class="info-banner" style="margin-bottom:0;">
+      <div class="info-banner-icon">&#9432;</div>
+      <div>
+        <div class="info-banner-title">Mock 诊断模式</div>
+        <div class="info-banner-text">
+          当前为模拟诊断数据，不连接真实硬件。
+          点击"刷新诊断"可重新获取模拟状态。
+        </div>
+      </div>
+    </div>
+    <div class="summary-row mt-4">
+      <span class="summary-key">诊断模式</span>
+      <span class="summary-value"><span class="badge badge-muted">Mock</span></span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-key">数据来源</span>
+      <span class="summary-value">本地模拟</span>
+    </div>
+  </div>
+
+</div>
+
 {% endblock %}

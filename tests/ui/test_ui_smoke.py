@@ -6,6 +6,7 @@ Run: pytest tests/ui -v
 import os
 import sys
 import pytest
+import allure
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -124,3 +125,60 @@ def test_stats_page_can_be_opened(logged_in_driver):
     assert title != ""
     total = page.total_runs()
     assert total is not None
+
+
+# ------------------------------------------------------------------
+# Demo failure — screenshot + Allure attachment sample
+# ------------------------------------------------------------------
+@allure.feature("Network Config")
+@allure.story("Save Config Failed")
+@allure.severity(allure.severity_level.CRITICAL)
+@allure.suite("UI Smoke")
+@allure.title("test_network_settings_save_failed")
+@allure.description("Verify network config save shows correct message. "
+                    "Intentionally fails to demonstrate Allure screenshot attachment.")
+def test_demo_failure_for_screenshot_sample(logged_in_driver):
+    driver = logged_in_driver
+
+    with allure.step("1. Open login page"):
+        driver.get(f"{BASE_URL}/login")
+
+    with allure.step("2. Login as admin/admin123"):
+        driver.get(f"{BASE_URL}/dashboard")
+
+    with allure.step("3. Open network settings page"):
+        page = NetworkPage(driver, BASE_URL)
+        page.load()
+
+    with allure.step("4. Modify IP address and DNS params"):
+        driver.find_element("id", "ssid").clear()
+        driver.find_element("id", "ssid").send_keys("TestNet-FailDemo")
+
+    with allure.step("5. Click save config button"):
+        driver.find_element("id", "save-network-button").click()
+
+    with allure.step("6. Verify message contains saved confirmation"):
+        msg = page.message()
+        import os, tempfile
+        ss_path = os.path.join(tempfile.gettempdir(), "demo_failure.png")
+        driver.save_screenshot(ss_path)
+        allure.attach.file(ss_path, name="failure_screenshot.png",
+                           attachment_type=allure.attachment_type.PNG)
+        allure.attach(driver.page_source, name="page_source.html",
+                      attachment_type=allure.attachment_type.HTML)
+        try:
+            logs = driver.get_log("browser")
+            log_text = "\n".join(
+                f"[{e['level']}] {e['message']}" for e in logs
+            ) or "(no console logs)"
+        except Exception:
+            log_text = "(console log unavailable)"
+        allure.attach(log_text, name="browser_console.log",
+                      attachment_type=allure.attachment_type.TEXT)
+        allure.attach(
+            f"actual:   {msg!r}\nexpected: contains 'save failed / retry'",
+            name="assertion_detail",
+            attachment_type=allure.attachment_type.TEXT,
+        )
+        assert "save failed, please retry" in msg, \
+            f"expected text to contain 'save failed', but actual message was {msg!r}"
