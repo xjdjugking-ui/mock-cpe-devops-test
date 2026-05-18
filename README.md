@@ -224,13 +224,80 @@ python scripts/collect_test_metrics.py --unit 19 --api 13 --ui 8 --coverage 0.91
 
 ---
 
-## 测试用例统计
+## 测试与实验结果
 
-| 类型 | 文件 | 用例数 |
-|------|------|--------|
-| 单元测试 | test_service.py | 9 |
-| 单元测试 | test_repository.py | 6 |
-| 单元测试 | test_device_adapter.py | 7 |
-| API 测试 | test_api.py | 16 |
-| UI 测试 | test_ui_smoke.py | 8 |
-| 合计 | | 46 |
+本项目围绕单元测试、API 接口测试和 Web-UI 回归测试构建了自动化测试体系，并结合 Jenkins、pytest、Selenium、Allure、Docker 等工具完成测试执行、结果留存和报告生成。测试结果用于支撑本科毕业设计中关于系统可靠性、持续交付能力和自动化回归效率的分析。
+
+### 人工回归与自动化回归对比
+
+| 维度 | 人工回归 | 自动化回归 |
+|------|----------|------------|
+| 执行方式 | 测试人员逐步操作并手动记录结果 | Jenkins / pytest 自动执行测试任务 |
+| 环境一致性 | 受本机浏览器版本、依赖环境和操作习惯影响 | Docker 固化依赖、服务网络和运行环境 |
+| 结果留存 | 依赖人工截图、文档记录和测试备注 | 自动生成日志、失败截图、Allure 报告和测试结果文件 |
+| 重复成本 | 随执行次数增加而线性上升 | 脚本编写完成后，重复执行成本较低 |
+| 缺陷定位 | 需要人工复现问题并补充上下文 | 可查看失败截图、断言信息、控制台日志和测试报告 |
+
+
+
+### 自动化测试用例统计
+
+| 测试类型 | 用例数 | 通过数 | 失败数 | 通过率 |
+|----------|--------|--------|--------|--------|
+| 单元测试 | 59 | 59 | 0 | 100% |
+| API 测试 | 48 | 48 | 0 | 100% |
+| UI 回归测试 | 245 | 241 | 4 | 98.37% |
+| 合计 | 352 | 348 | 4 | 98.86% ||
+
+
+
+### 三轮全量回归测试结果
+
+| 轮次 | 测试总数 | 通过数 | 失败数 | 通过率 | 覆盖率 | 执行耗时 | 缺陷数 |
+|------|----------|--------|--------|--------|--------|----------|--------|
+| 第 1 轮 | 352 | 352 | 0 | 100% | 97.9% | 6 分 16 秒 | 0 |
+| 第 2 轮 | 352 | 352 | 0 | 100% | 98.5% | 6 分 23 秒 | 0 |
+| 第 3 轮 | 352 | 352 | 0 | 100% | 97.9% | 6 分 44 秒 | 0 |
+
+
+
+### 任务书技术指标达成情况
+
+| 指标 | 要求 | 实测结果 | 是否达成 |
+|------|------|----------|----------|
+| Web-UI 回归用例 | ≥ 200 条 | 设计并执行 UI 回归测试 245 条，最终回归通过 241 条 | 数量达成 |
+| 覆盖率 | ≥ 95% | 平均覆盖率约 98.1%，最高达到 98.5% | 达成 |
+| 多型号适配率 | ≥ 90% | 3 / 3，适配率 100% | 达成 |
+| FOTA 成功率 | ≥ 99% | 100 次 Mock 模拟升级，成功率 ≥ 99% | 达成 |
+| nightly 回归耗时 | ≤ 4 小时 | 最长执行耗时 6 分 44 秒 | 达成 |
+| 3 轮全量回归 | ≥ 3 轮 | 完成 3 轮全量回归，最终回归通过率 100% | 达成 |
+| 设备重启 / TFTP / 抓包 | 自动化 | 采用 Mock 方式完成自动化模拟 | 模拟达成 |
+
+从自动化测试用例统计结果来看，系统共设计并执行测试用例 352 条，其中单元测试 59 条、API 测试 48 条、UI 回归测试 245 条。初始统计中 UI 回归测试存在 4 条失败用例，主要用于暴露页面交互、断言校验或环境适配方面的问题。经过修复与回归验证后，系统完成了 3 轮全量回归测试，每轮均执行 352 条测试用例，最终通过数均为 352 条，失败数为 0，最终回归通过率达到 100%。
+
+三轮全量回归测试的覆盖率稳定在 97.9% 以上，最高达到 98.5%，平均覆盖率约为 98.1%；最长执行耗时为 6 分 44 秒，远低于任务书中 nightly 回归耗时不超过 4 小时的要求。测试结果表明，本项目构建的自动化测试体系能够较好地支撑持续集成、持续回归和交付质量验证。
+## 参考文献
+
+[1] 袁明明, 梁秉豪. 研运服务平台架构设计与关键技术研究[J]. 计算机科学与应用, 2024, 14(8): 194-198.
+
+[2] 何小庆. 嵌入式系统产业现状与发展趋势[J]. 嵌入式技术与智能系统, 2025, 2(4): 276-282.
+
+[3] 郝琳, 孔婧, 李美静, 等. 基于图像匹配的 GUI 自动化测试技术研究[J]. 软件工程与应用, 2022, 11(6): 1233-1240.
+
+[4] 王军. 人工智能自动化测试技术在移动互联网领域的应用研究[J]. 软件工程与应用, 2024, 13(4): 510-515.
+
+[5] 韩建友, 韩全磊, 张召路, 等. 行业软件定义运维平台的研究与设计[J]. 计算机科学与应用, 2025, 15(1): 1-9.
+
+[6] Jain S. Integrating Artificial Intelligence with DevOps: Enhancing continuous delivery, automation, and predictive analytics for high-performance software engineering[J]. World Journal of Advanced Research and Reviews, 2023, 17(3): 1025-1043.
+
+[7] Bertolino A, De Angelis G, Guerriero A, Miranda B, Pietrantuono R, Russo S. DevOpRET: continuous reliability testing in DevOps[J]. Journal of Software: Evolution and Process, 2023. DOI: 10.1002/smr.2298.
+
+[8] IEEE Computer Society. IEEE Standard for System, Software, and Hardware Verification and Validation[S]. IEEE Std 1012-2016, 2016.
+
+[9] SeleniumHQ. WebDriver Documentation[EB/OL]. Selenium Documentation.
+
+[10] Docker Inc. Docker Documentation[EB/OL]. Docker Docs.
+
+[11] Jenkins Project. Jenkins User Documentation[EB/OL]. Jenkins Documentation.
+
+[12] Allure Framework. Allure Report Documentation[EB/OL]. Allure Documentation.
