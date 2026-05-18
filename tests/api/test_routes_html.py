@@ -100,6 +100,17 @@ def test_dashboard_authenticated(client):
     r = client.get('/dashboard')
     assert r.status_code == 200
     assert 'text/html' in r.content_type
+    assert b'Gateway' in r.data
+
+
+def test_dashboard_renders_dynamic_activity(client):
+    _login(client)
+    client.application.gateway_service.repo.add_activity(
+        "CI Deploy", "Build #999 deployed from Jenkins"
+    )
+    r = client.get('/dashboard')
+    assert r.status_code == 200
+    assert b'Build #999 deployed from Jenkins' in r.data
 
 
 # ------------------------------------------------------------------

@@ -16,6 +16,8 @@ htmlcov/
 
 # Logs
 *.log
+console_full_*.txt
+build_result*.txt
 
 # IDE / Editor
 .vscode/
@@ -44,3 +46,15 @@ artifacts/
 
 # Server log
 server.log
+
+# Jenkins/API local debug artifacts
+cookies.txt
+crumb*.txt
+jenkins_cookies_check.txt
+plugin_status.json
+config_jenkins_tmp.xml
+config_live_*.xml
+tmp_config.xml
+last_trigger_prev.txt
+docker-cli.tgz
+jenkins_config_*.xml

@@ -170,6 +170,15 @@ def readiness():
     return jsonify({'ready': True})
 
 
+@api.route('/build-info')
+def build_info():
+    return jsonify({
+        'version': current_app.config.get('APP_BUILD_VERSION', 'local-dev'),
+        'build_number': current_app.config.get('APP_BUILD_NUMBER', ''),
+        'build_url': current_app.config.get('APP_BUILD_URL', ''),
+    })
+
+
 @api.route('/dashboard')
 def api_dashboard():
     return jsonify(_svc().dashboard_context())

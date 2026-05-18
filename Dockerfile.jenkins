@@ -1,0 +1,51 @@
+FROM jenkins/jenkins:lts
+
+USER root
+ENV PATH="/opt/java/openjdk/bin:${PATH}"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install docker CLI from static binary
+RUN curl -fsSL https://download.docker.com/linux/static/stable/x86_64/docker-24.0.7.tgz -o /tmp/docker.tgz \
+    && tar xzf /tmp/docker.tgz -C /usr/local/bin --strip-components=1 \
+    && rm /tmp/docker.tgz
+
+# Install docker-compose standalone (v2) — needed because docker compose plugin is absent from static CLI
+RUN curl -fsSL https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-x86_64 \
+         -o /usr/local/bin/docker-compose \
+    && chmod +x /usr/local/bin/docker-compose \
+    && mkdir -p /usr/local/lib/docker/cli-plugins \
+    && ln -sf /usr/local/bin/docker-compose /usr/local/lib/docker/cli-plugins/docker-compose \
+    && docker-compose version \
+    && docker compose version \
+    && docker --version
+
+# Install Allure CLI for report generation in the Jenkins workspace.
+ARG ALLURE_VERSION=2.33.0
+RUN curl -fsSL "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz" -o /tmp/allure.tgz \
+    && mkdir -p /opt/allure \
+    && tar xzf /tmp/allure.tgz -C /opt/allure --strip-components=1 \
+    && rm /tmp/allure.tgz \
+    && chmod +x /opt/allure/bin/allure \
+    && /opt/allure/bin/allure --version
+
+# Keep the Jenkins image reproducible for the UI/reporting plugins used by this demo.
+RUN jenkins-plugin-cli --plugins blueocean email-ext mailer allure-jenkins-plugin junit htmlpublisher pipeline-stage-view timestamper
+
+# Add jenkins user to root group so it can access the docker socket
+RUN usermod -aG root jenkins
+
+# Create an entrypoint wrapper that fixes docker socket permissions at container start.
+# This wrapper runs as root (USER root below) so it can chmod the socket.
+RUN echo '#!/bin/sh' > /usr/local/bin/jenkins-entrypoint.sh \
+    && echo 'chmod a+rw /var/run/docker.sock 2>/dev/null || true' >> /usr/local/bin/jenkins-entrypoint.sh \
+    && echo 'exec /usr/local/bin/jenkins.sh "$@"' >> /usr/local/bin/jenkins-entrypoint.sh \
+    && chmod +x /usr/local/bin/jenkins-entrypoint.sh
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/jenkins-entrypoint.sh"]
+
+# Keep root so the entrypoint wrapper can fix socket permissions;
+# the official jenkins.sh script internally drops to the jenkins user.
+USER root

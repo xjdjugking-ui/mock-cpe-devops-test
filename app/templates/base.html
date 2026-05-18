@@ -60,7 +60,7 @@
 
     </div>
 
-    <div class="sidebar-footer">Mock Mode &middot; v1.0</div>
+    <div class="sidebar-footer">Mock Mode &middot; {{ app_build_version }}</div>
   </nav>
 
   <!-- Page Container -->
@@ -74,6 +74,7 @@
       <div class="topbar-right">
         <span class="topbar-badge">Mock Mode</span>
         <span class="topbar-badge">Local Jenkins</span>
+        <span class="topbar-badge" title="{{ app_build_url or 'local build' }}">Gateway {{ app_build_version }}</span>
         <div class="topbar-user">
           <div class="user-avatar">A</div>
           <span class="user-name">admin</span>

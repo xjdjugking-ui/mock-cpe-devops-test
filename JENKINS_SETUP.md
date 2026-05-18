@@ -1,6 +1,24 @@
 # Jenkins 配置指南 — Mock CPE DevOps CI/CD Pipeline
 
-> 目标：Git Push → Jenkins 自动拉取代码 → Docker 里跑测试 → Allure 集成报告
+> 目标：Git Push → Jenkins 自动拉取代码 → **10 分钟内完成全量测试** → 覆盖率 >= 95% → 生成 Jenkins/Allure/Gmail 报告
+> Gmail 报告推送配置见 `JENKINS_GMAIL_SETUP.md`。当前流水线会在 SMTP/Gmail 未配置好时明确失败，避免“构建成功但邮箱没收到报告”。
+
+---
+
+## 快速验证模式（推荐）
+
+当前仓库已经提供一个 **最小 CI/CD 工作流**，用于快速验证整条链路：
+
+- 触发方式：`git push` 后 Jenkins `Poll SCM`
+- 流水线模式：**本地 Python quick smoke**（不跑 Docker / 不跑 UI）
+- 测试范围：
+  - `tests/unit/test_device_adapter.py`
+  - `tests/api/test_routes_html.py`
+- 报告产物：
+  - JUnit XML：`reports/unit_junit.xml`、`reports/api_junit.xml`
+  - JSON / Coverage / Dashboard：`reports/`
+
+> 说明：首次构建如果需要创建虚拟环境，耗时可能略高；**后续提交验证通常会明显快于 1 分钟**。
 
 ---
 
@@ -46,7 +64,7 @@ docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 
 ---
 
-## 安装 Allure Jenkins Plugin（两种方案通用）
+## 安装 Allure Jenkins Plugin（可选）
 
 ### 步骤
 
@@ -78,32 +96,63 @@ docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 3. 选择 **Pipeline**
 4. 点击 **OK**
 
-### 第 2 步：配置 Git 仓库
+### 第 2 步：配置 Pipeline 脚本
 
-1. 在 **Pipeline** 区域，**Definition** 选择 `Pipeline script from SCM`
-2. **SCM** 选择 `Git`
-3. **Repository URL** 填入你的 Git 仓库地址，例如：
-   ```
-   https://github.com/yourname/mock-cpe-devops-test.git
-   ```
-   > 如果是本地仓库，可以用 `file:///C:/Users/LPC/mock-cpe-devops-test`
-4. **Branch Specifier** 保持 `*/main`（或你的默认分支）
-5. **Script Path** 保持 `Jenkinsfile`
+> **为什么不用 Git SCM？** Jenkins 运行在 Docker 容器内，无法直接访问 Windows 宿主机的本地路径（`file:///C:/...`）。
+> 解决方案：直接用 "Pipeline script" 模式粘贴 Jenkinsfile 内容。
+
+1. 在 **Pipeline** 区域，**Definition** 选择 `Pipeline script`
+2. 打开项目中的 `Jenkinsfile`，**复制全部内容**
+3. 粘贴到 **Script** 文本框中
+
+> 如果想用 Git SCM（推送到 GitHub/GitLab 后），需要在创建任务时选 `Pipeline script from SCM`，填入远程仓库 URL。本地仓库不支持。
+
+> **关键建议：如果你想每次 `git push` 后都自动保留最新的“状态集摘要”，优先使用 `Pipeline script from SCM` 并让 Jenkins 直接读取仓库里的 `Jenkinsfile`。**
+>
+> 如果你当前用的是 **Pipeline script**（把脚本粘贴在 Jenkins UI 里），那么你每次修改本地 `Jenkinsfile` 后，还需要把它重新同步进 Jenkins 任务配置，否则后续构建可能继续跑旧脚本，导致你看到“状态集又消失”。
+
+### 同步 Jenkinsfile 到 Jenkins 任务（适用于 Pipeline script 模式）
+
+如果你的 Jenkins 是 Docker 里的容器，并且任务名是 `MockCPE-DevOps`，可以在项目根目录执行：
+
+```batch
+python scripts/_deploy_jenkinsfile.py
+```
+
+或者：
+
+```batch
+python scripts/update_jenkins_config.py
+```
+
+默认配置：
+- Jenkins 地址：`http://localhost:8080`
+- Job 名称：`MockCPE-DevOps`
+
+也支持环境变量覆盖：
+
+```batch
+set JENKINS_URL=http://localhost:8080
+set JENKINS_JOB_NAME=MockCPE-DevOps
+python scripts/update_jenkins_config.py
+```
+
 
 ### 第 3 步：配置 Allure Report
 
 1. 在任务配置页找到 **Post-build Actions**
 2. 点击 **Add post-build action** → 选择 **Allure Report**
-3. **Path** 配置如下（Jenkinsfile 中 Allure 步骤会自动生成报告，这里是 UI 显示的兜底）：
-   - Results → 不用填（Jenkinsfile 里的 `allure` pipeline 步骤已处理）
-
-> Jenkinsfile 里的 `allure` DSL 步骤会自动聚合 `allure-results/unit`、`allure-results/api`、`allure-results/ui`，无需额外配置。
+3. 如果你保留 Allure 插件，可以继续安装；但 **quick smoke 流程的最小依赖并不强制要求 Allure**。
+4. 最小工作流主要依赖：
+   - Jenkins 控制台输出
+   - JUnit 测试结果
+   - `reports/jenkins-dashboard.html`
 
 ### 第 4 步：配置构建触发器（自动触发）
 
 1. 在 **Build Triggers** 区域
 2. 勾选 **Poll SCM**
-3. Schedule 填入：`H/5 * * * *`（每 5 分钟检查一次 Git 变更）
+3. Schedule 填入：`H/1 * * * *`（每 1 分钟检查一次 Git 变更，适合快速验证）
 4. 或者用 Webhook（需要 GitHub/GitLab 配置，Poll SCM 更简单）
 
 ### 第 5 步：保存
@@ -117,8 +166,8 @@ docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 1. 在任务页面点击 **Build Now**（左侧）
 2. 等待构建完成
 3. 观察 **Stage View** — 应该看到 9 个阶段依次变绿
-4. 构建完成后页面出现 **Allure Report** 图标
-5. 点击图标查看集成测试报告
+4. 构建完成后查看 **Test Result**、**CI Dashboard**、**Artifacts**
+5. 打开 `reports/jenkins-dashboard.html` 查看快速测试报告
 
 ---
 

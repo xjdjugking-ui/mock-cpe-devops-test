@@ -1,0 +1,301 @@
+// Mock CPE DevOps Quick CI Pipeline
+//
+// Goal: keep the Git push verification flow simple and fast:
+// checkout -> quick unit/api smoke -> Allure + HTML dashboard.
+
+import groovy.json.JsonSlurperClassic
+
+def readMetrics() {
+    if (!fileExists('reports/test_metrics.json')) {
+        return [
+            unit: [total: 0, passed: 0, failed: 0, skipped: 0, duration: 0],
+            api: [total: 0, passed: 0, failed: 0, skipped: 0, duration: 0],
+            ui: [total: 0, passed: 0, failed: 0, skipped: 0, duration: 0],
+            total: 0,
+            passed: 0,
+            failed: 0,
+            skipped: 0,
+            pass_rate: 0
+        ]
+    }
+    return new JsonSlurperClassic().parseText(readFile('reports/test_metrics.json'))
+}
+
+def readCoverageRate() {
+    if (!fileExists('reports/coverage.xml')) {
+        return 'N/A'
+    }
+    def coverageText = readFile('reports/coverage.xml')
+    def coverageMatch = coverageText =~ /line-rate="([0-9.]+)"/
+    if (coverageMatch.find()) {
+        return String.format('%.1f%%', Float.parseFloat(coverageMatch.group(1)) * 100)
+    }
+    return 'N/A'
+}
+
+def setQuickSummary() {
+    def buildResult = currentBuild.currentResult ?: 'SUCCESS'
+    def badgeColor = buildResult == 'SUCCESS' ? '#24a148' : '#da1e28'
+    def metrics = readMetrics()
+    def unit = metrics.unit ?: [:]
+    def api = metrics.api ?: [:]
+    def ui = metrics.ui ?: [:]
+    def coverageRate = readCoverageRate()
+    def passRate = metrics.pass_rate ?: 0
+    def buildUrl = env.BUILD_URL ?: '#'
+    def consoleUrl = "${buildUrl}console"
+    def artifactsUrl = "${buildUrl}artifact/"
+    def testReportUrl = "${buildUrl}testReport/"
+    def dashboardUrl = "${buildUrl}CI_20Dashboard/"
+    def htmlReportUrl = "${artifactsUrl}reports/jenkins-dashboard.html"
+    def blueOceanUrl = env.JENKINS_URL ? "${env.JENKINS_URL}blue/organizations/jenkins/${env.JOB_NAME}/detail/${env.JOB_NAME}/${env.BUILD_NUMBER}/pipeline/" : '#'
+
+    currentBuild.description = """
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#172033;margin:8px 0 18px">
+          <div style="border:1px solid #d9e2ef;border-radius:8px;background:#fff;padding:14px 16px;margin-bottom:12px">
+            <table style="width:100%;border-collapse:collapse">
+              <tr>
+                <td>
+                  <div style="font-size:20px;font-weight:700">Mock CPE DevOps #${env.BUILD_NUMBER}</div>
+                  <div style="color:#6b778c;margin-top:4px">Git push triggered pipeline with console, stages, build info, test summary, coverage, and reports.</div>
+                </td>
+                <td style="width:120px;text-align:right"><span style="padding:5px 12px;border-radius:6px;background:${badgeColor};color:#fff;font-weight:700">${buildResult}</span></td>
+              </tr>
+              <tr>
+                <td colspan="2" style="padding-top:12px;color:#334155">
+                  Branch: <b>main</b> &nbsp; Triggered by: <b>Git push / Poll SCM</b> &nbsp; Job: <b>${env.JOB_NAME}</b>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <h3 style="margin:14px 0 8px">Pipeline Stages</h3>
+          <table style="width:100%;border-collapse:separate;border-spacing:8px">
+            <tr>
+              <td style="border:2px solid #93d3a2;border-radius:8px;background:#f7fff8;padding:10px;text-align:center"><b>1. Checkout</b><br/><code>checkout scm</code><br/><span style="color:#6b778c">OK</span></td>
+              <td style="border:2px solid #93d3a2;border-radius:8px;background:#f7fff8;padding:10px;text-align:center"><b>2. Verify Python</b><br/><code>python + pytest</code><br/><span style="color:#6b778c">OK</span></td>
+              <td style="border:2px solid #93d3a2;border-radius:8px;background:#f7fff8;padding:10px;text-align:center"><b>3. Run Unit Tests</b><br/><code>${unit.passed ?: 0}/${unit.total ?: 0}</code><br/><span style="color:#6b778c">passed</span></td>
+              <td style="border:2px solid #93d3a2;border-radius:8px;background:#f7fff8;padding:10px;text-align:center"><b>4. Run API Tests</b><br/><code>${api.passed ?: 0}/${api.total ?: 0}</code><br/><span style="color:#6b778c">passed</span></td>
+              <td style="border:2px solid #93d3a2;border-radius:8px;background:#f7fff8;padding:10px;text-align:center"><b>5. Prepare Reports</b><br/><code>JUnit + JSON + XML</code><br/><span style="color:#6b778c">OK</span></td>
+              <td style="border:2px solid #93d3a2;border-radius:8px;background:#f7fff8;padding:10px;text-align:center"><b>6. Publish Reports</b><br/><code>Dashboard + Artifacts</code><br/><span style="color:#6b778c">OK</span></td>
+            </tr>
+          </table>
+          <table style="width:100%;border-collapse:separate;border-spacing:12px;margin-top:10px">
+            <tr>
+              <td style="width:52%;vertical-align:top;border:1px solid #d9e2ef;border-radius:8px;background:#050a14;color:#d1e7dd;padding:14px">
+                <h3 style="margin-top:0;color:#fff">Console Output</h3>
+                <pre style="margin:0;white-space:pre-wrap">Pipeline console summary
+========================
+Unit tests : ${unit.passed ?: 0}/${unit.total ?: 0} passed
+API tests  : ${api.passed ?: 0}/${api.total ?: 0} passed
+UI tests   : ${ui.passed ?: 0}/${ui.total ?: 0} passed
+Coverage   : ${coverageRate}
+Reports    : JUnit + HTML dashboard + archived artifacts
+Status     : ${buildResult}
+
+Links
+-----
+Console    : ${consoleUrl}
+Dashboard  : ${dashboardUrl}
+TestReport : ${testReportUrl}
+Artifacts  : ${artifactsUrl}</pre>
+              </td>
+              <td style="vertical-align:top;border:1px solid #d9e2ef;border-radius:8px;background:#fff;padding:14px">
+                <h3 style="margin-top:0">Build Info</h3>
+                <table style="width:100%;border-collapse:collapse">
+                  <tr><td>Job</td><td><b>${env.JOB_NAME}</b></td></tr>
+                  <tr><td>Build</td><td><b>#${env.BUILD_NUMBER}</b></td></tr>
+                  <tr><td>Result</td><td><b>${buildResult}</b></td></tr>
+                  <tr><td>Mode</td><td><b>quick-local</b></td></tr>
+                  <tr><td>Pass Rate</td><td><b>${passRate}%</b></td></tr>
+                  <tr><td>Coverage</td><td><b>${coverageRate}</b></td></tr>
+                </table>
+                <h3 style="margin-bottom:8px">Build Links</h3>
+                <table style="width:100%;border-collapse:collapse">
+                  <tr><td><a href="${dashboardUrl}">CI Dashboard</a></td><td><a href="${testReportUrl}">Test Result</a></td></tr>
+                  <tr><td><a href="${consoleUrl}">Console Output</a></td><td><a href="${artifactsUrl}">Artifacts</a></td></tr>
+                  <tr><td><a href="${htmlReportUrl}">HTML Report</a></td><td><a href="${blueOceanUrl}">Blue Ocean</a></td></tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <h3 style="margin:14px 0 8px">Test Result Summary</h3>
+          <table style="width:100%;border-collapse:separate;border-spacing:12px">
+            <tr>
+              <td style="border:1px solid #d9e2ef;border-radius:8px;background:#fff;padding:14px;text-align:center"><div style="color:#6b778c">Unit Tests</div><div style="font-size:28px;color:#24a148;font-weight:800">${unit.passed ?: 0}</div><div>passed / ${unit.failed ?: 0} failed</div></td>
+              <td style="border:1px solid #d9e2ef;border-radius:8px;background:#fff;padding:14px;text-align:center"><div style="color:#6b778c">API Tests</div><div style="font-size:28px;color:#24a148;font-weight:800">${api.passed ?: 0}</div><div>passed / ${api.failed ?: 0} failed</div></td>
+              <td style="border:1px solid #d9e2ef;border-radius:8px;background:#fff;padding:14px;text-align:center"><div style="color:#6b778c">UI Tests</div><div style="font-size:28px;color:#24a148;font-weight:800">${ui.passed ?: 0}</div><div>passed / ${ui.failed ?: 0} failed</div></td>
+              <td style="border:1px solid #d9e2ef;border-radius:8px;background:#fff;padding:14px;text-align:center"><div style="color:#6b778c">Coverage</div><div style="font-size:28px;color:#24a148;font-weight:800">${coverageRate}</div><div>coverage.xml</div></td>
+            </tr>
+          </table>
+        </div>
+    """
+}
+
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    triggers {
+        pollSCM('H/1 * * * *')
+    }
+
+    environment {
+        PIPELINE_MODE = 'quick-local'
+        UNIT_SMOKE_ARGS = 'tests/unit/test_device_adapter.py -q --tb=short --junitxml=reports/unit_junit.xml --cov=app --cov=cpe_devops --cov-report=xml:reports/coverage.xml --cov-report=term'
+        API_SMOKE_ARGS = 'tests/api/test_routes_html.py -q --tb=short --junitxml=reports/api_junit.xml'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    try {
+                        checkout scm
+                    } catch (err) {
+                        echo "checkout scm unavailable, using current workspace: ${err}"
+                    }
+                }
+            }
+        }
+
+        stage('Prepare Workspace') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            rm -rf allure-results reports
+                            mkdir -p allure-results reports
+                        '''
+                    } else {
+                        bat '''
+                            if exist allure-results rmdir /s /q allure-results
+                            if exist reports rmdir /s /q reports
+                            mkdir allure-results
+                            mkdir reports
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Verify Python Environment') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            python3 --version
+                            python3 -c "import flask, werkzeug, pytest, pytest_cov"
+                        '''
+                    } else {
+                        bat '''
+                            python --version
+                            python -c "import flask, werkzeug, pytest, pytest_cov"
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Run Unit Smoke') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'python3 -m pytest ${UNIT_SMOKE_ARGS}'
+                    } else {
+                        bat 'python -m pytest %UNIT_SMOKE_ARGS%'
+                    }
+                }
+            }
+        }
+
+        stage('Run API Smoke') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'python3 -m pytest ${API_SMOKE_ARGS}'
+                    } else {
+                        bat 'python -m pytest %API_SMOKE_ARGS%'
+                    }
+                }
+            }
+        }
+
+        stage('Build Quick Reports') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            python3 scripts/build_quick_report.py --junit reports/unit_junit.xml --output reports/unit_report.json
+                            python3 scripts/build_quick_report.py --junit reports/api_junit.xml --output reports/api_report.json
+                            python3 scripts/build_quick_report.py --junit reports/ui_junit.xml --output reports/ui_report.json
+                            PIPELINE_MODE=${PIPELINE_MODE} python3 scripts/prepare_allure_metadata.py \
+                                --allure-results allure-results \
+                                --reports reports \
+                                --jenkins-url "${JENKINS_URL}" \
+                                --job-name "${JOB_NAME}" \
+                                --build-number "${BUILD_NUMBER}" \
+                                --build-url "${BUILD_URL}"
+                            python3 scripts/generate_ci_dashboard.py \
+                                --reports reports \
+                                --output reports/jenkins-dashboard.html \
+                                --job-name "${JOB_NAME}" \
+                                --build-number "${BUILD_NUMBER}" \
+                                --build-url "${BUILD_URL}" \
+                                --blue-url "${JENKINS_URL}blue/organizations/jenkins/${JOB_NAME}/detail/${JOB_NAME}/${BUILD_NUMBER}/pipeline/" \
+                                --allure-url "${BUILD_URL}artifact/reports/jenkins-dashboard.html"
+                        '''
+                    } else {
+                        bat '''
+                            python scripts/build_quick_report.py --junit reports/unit_junit.xml --output reports/unit_report.json
+                            python scripts/build_quick_report.py --junit reports/api_junit.xml --output reports/api_report.json
+                            python scripts/build_quick_report.py --junit reports/ui_junit.xml --output reports/ui_report.json
+                            set PIPELINE_MODE=%PIPELINE_MODE%
+                            python scripts/prepare_allure_metadata.py --allure-results allure-results --reports reports --jenkins-url "%JENKINS_URL%" --job-name "%JOB_NAME%" --build-number "%BUILD_NUMBER%" --build-url "%BUILD_URL%"
+                            python scripts/generate_ci_dashboard.py --reports reports --output reports/jenkins-dashboard.html --job-name "%JOB_NAME%" --build-number "%BUILD_NUMBER%" --build-url "%BUILD_URL%" --blue-url "%JENKINS_URL%blue/organizations/jenkins/%JOB_NAME%/detail/%JOB_NAME%/%BUILD_NUMBER%/pipeline/" --allure-url "%BUILD_URL%artifact/reports/jenkins-dashboard.html"
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Publish Reports') {
+            steps {
+                junit testResults: 'reports/*_junit.xml', allowEmptyResults: false
+                publishHTML(
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'reports',
+                    reportFiles: 'jenkins-dashboard.html',
+                    reportName: 'CI Dashboard'
+                )
+                archiveArtifacts artifacts: 'reports/**, allure-results/**', allowEmptyArchive: false
+                script {
+                    setQuickSummary()
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                if (fileExists('reports/test_metrics.json')) {
+                    setQuickSummary()
+                }
+            }
+            echo 'Quick CI finished. Check CI Dashboard, Test Result, Console Output, and Artifacts.'
+        }
+        success {
+            echo 'Quick CI succeeded within the lightweight verification flow.'
+        }
+        failure {
+            echo 'Quick CI failed. Check the console log and archived reports.'
+        }
+    }
+}

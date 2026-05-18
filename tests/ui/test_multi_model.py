@@ -76,11 +76,12 @@ def test_artifact_registration_across_models(logged_in_driver, model):
     """验证固件制品注册在不同型号下仍能正确工作"""
     page = ArtifactsPage(logged_in_driver, BASE_URL, model=model)
     page.load()
+    safe_model = model.replace("_", "")
     page.register_artifact(
-        filename=f"{model}_v7.0.0.bin",
+        filename="cpe_gateway_v7.0.0.bin",
         source_type="manual",
-        source_ref=f"{model}-build",
-        path=f"artifacts/{model}_v7.0.0.bin",
+        source_ref=f"{safe_model}-build",
+        path=f"artifacts/cpe_gateway_v7.0.0.bin",
         note=f"Multi-model test for {model}",
     )
     msg = page.message()
@@ -96,10 +97,11 @@ def test_upgrade_job_across_models(logged_in_driver, model):
     """验证升级作业在不同型号下仍能正确执行"""
     art_page = ArtifactsPage(logged_in_driver, BASE_URL, model=model)
     art_page.load()
+    safe_model = model.replace("_", "")
     art_page.register_artifact(
-        filename=f"{model}_v6.0.0.bin",
+        filename="cpe_gateway_v6.0.0.bin",
         source_type="ci",
-        source_ref=f"{model}-job-build",
+        source_ref=f"{safe_model}-job-build",
     )
     jobs_page = JobsPage(logged_in_driver, BASE_URL, model=model)
     jobs_page.load()

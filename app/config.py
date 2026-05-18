@@ -12,6 +12,12 @@ class Config:
     ADMIN_USERNAME = 'admin'
     ADMIN_PASSWORD = 'admin123'
 
+    APP_BUILD_VERSION = os.environ.get('APP_BUILD_VERSION', 'local-dev')
+    APP_BUILD_NUMBER = os.environ.get('APP_BUILD_NUMBER', '')
+    APP_BUILD_URL = os.environ.get('APP_BUILD_URL', '')
+    APP_FIRMWARE_BASELINE = os.environ.get('APP_FIRMWARE_BASELINE', '')
+    APP_FIRMWARE_TARGET = os.environ.get('APP_FIRMWARE_TARGET', '')
+
     DEVICE_MODEL = 'CPE-GW-X300'
     DEVICE_FIRMWARE = 'v2.1.0'
     DEVICE_WAN = 'connected'

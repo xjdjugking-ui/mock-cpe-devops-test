@@ -181,6 +181,16 @@
       </tr>
     </thead>
     <tbody>
+      {% if activities %}
+      {% for activity in activities %}
+      <tr>
+        <td class="mono text-muted">{{ activity.time }}</td>
+        <td><span class="badge badge-info">{{ activity.event }}</span></td>
+        <td>{{ activity.detail }}</td>
+        <td><span class="check-pill">&#10003;</span></td>
+      </tr>
+      {% endfor %}
+      {% else %}
       <tr>
         <td class="mono text-muted">2026-05-15 10:01</td>
         <td><span class="badge badge-success">升级</span></td>
@@ -205,6 +215,7 @@
         <td>设备启动完成</td>
         <td><span class="check-pill">&#10003;</span></td>
       </tr>
+      {% endif %}
     </tbody>
   </table>
 </div>

@@ -1,0 +1,291 @@
+// Mock CPE DevOps CI/CD Pipeline (Docker-based)
+//
+// Jenkins runs this job from the local Jenkins workspace.
+// The application, Selenium, tests, and Allure result collection all run in Docker.
+
+pipeline {
+    agent {
+        node {
+            label 'built-in'
+            customWorkspace '/workspace/mock-cpe-devops-test'
+        }
+    }
+
+    environment {
+        TEST_UNIT_CONTAINER = 'test-runner-unit'
+        TEST_API_CONTAINER = 'test-runner-api'
+        TEST_UI_CONTAINER = 'test-runner-ui'
+        PYTEST_UNIT_ARGS = 'tests/unit/test_device_adapter.py -q --tb=short --alluredir=/app/allure-results/unit --json-report --json-report-file=/app/reports/unit_report.json --cov=app --cov=cpe_devops --cov-report=xml:/app/reports/coverage.xml --cov-report=term'
+        PYTEST_API_ARGS = 'tests/api -q --tb=short --alluredir=/app/allure-results/api --json-report --json-report-file=/app/reports/api_report.json'
+        PYTEST_UI_ARGS = 'tests/ui/test_ci_demo.py -q --tb=short --alluredir=/app/allure-results/ui --json-report --json-report-file=/app/reports/ui_report.json'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Source loaded from mounted local project workspace'
+            }
+        }
+
+        stage('Reset Docker State') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'docker compose down --remove-orphans --volumes 2>/dev/null || docker-compose down --remove-orphans --volumes 2>/dev/null || true'
+                    } else {
+                        bat 'docker compose down --remove-orphans --volumes 2>nul || docker-compose down --remove-orphans --volumes 2>nul || ver>nul'
+                    }
+                }
+            }
+        }
+
+        stage('Build Test Image') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'docker compose build 2>&1 || docker-compose build 2>&1'
+                    } else {
+                        bat 'docker compose build 2>&1 || docker-compose build 2>&1'
+                    }
+                }
+                echo 'Docker images built: mock-cpe + test-runner'
+            }
+        }
+
+        stage('Start Services') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'docker compose up -d mock-cpe selenium 2>&1'
+                    } else {
+                        bat 'docker compose up -d mock-cpe selenium 2>&1'
+                    }
+                }
+                sleep 10
+                echo 'Mock CPE + Selenium Chrome services running'
+            }
+        }
+
+        stage('Run Unit Tests') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            docker rm -f "${TEST_UNIT_CONTAINER}" 2>/dev/null || true
+                            docker compose run --name "${TEST_UNIT_CONTAINER}" \
+                                -e "PYTEST_ARGS=${PYTEST_UNIT_ARGS}" \
+                                test-runner
+                        '''
+                    } else {
+                        bat '''
+                            docker rm -f "%TEST_UNIT_CONTAINER%" 2>nul || ver>nul
+                            docker compose run --name "%TEST_UNIT_CONTAINER%" ^
+                                -e "PYTEST_ARGS=%PYTEST_UNIT_ARGS%" ^
+                                test-runner
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Run API Tests') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            docker rm -f "${TEST_API_CONTAINER}" 2>/dev/null || true
+                            docker compose run --name "${TEST_API_CONTAINER}" \
+                                -e "PYTEST_ARGS=${PYTEST_API_ARGS}" \
+                                test-runner
+                        '''
+                    } else {
+                        bat '''
+                            docker rm -f "%TEST_API_CONTAINER%" 2>nul || ver>nul
+                            docker compose run --name "%TEST_API_CONTAINER%" ^
+                                -e "PYTEST_ARGS=%PYTEST_API_ARGS%" ^
+                                test-runner
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Run UI Tests') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            docker rm -f "${TEST_UI_CONTAINER}" 2>/dev/null || true
+                            docker compose run --name "${TEST_UI_CONTAINER}" \
+                                -e "PYTEST_ARGS=${PYTEST_UI_ARGS}" \
+                                test-runner
+                        '''
+                    } else {
+                        bat '''
+                            docker rm -f "%TEST_UI_CONTAINER%" 2>nul || ver>nul
+                            docker compose run --name "%TEST_UI_CONTAINER%" ^
+                                -e "PYTEST_ARGS=%PYTEST_UI_ARGS%" ^
+                                test-runner
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Extract Artifacts') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            rm -rf allure-results reports screenshots
+                            docker cp "${TEST_UI_CONTAINER}:/app/allure-results" ./allure-results
+                            docker cp "${TEST_UI_CONTAINER}:/app/reports" ./reports || true
+                            docker cp "${TEST_UI_CONTAINER}:/app/screenshots" ./screenshots || true
+                            chmod -R a+rwX allure-results reports screenshots 2>/dev/null || true
+                            ls -la allure-results
+                        '''
+                    } else {
+                        bat '''
+                            if exist allure-results rmdir /s /q allure-results
+                            if exist reports rmdir /s /q reports
+                            if exist screenshots rmdir /s /q screenshots
+                            docker cp "%TEST_UI_CONTAINER%:/app/allure-results" ./allure-results
+                            docker cp "%TEST_UI_CONTAINER%:/app/reports" ./reports 2>nul || ver>nul
+                            docker cp "%TEST_UI_CONTAINER%:/app/screenshots" ./screenshots 2>nul || ver>nul
+                            dir allure-results
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Prepare Report Metadata') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            python3 --version >/dev/null 2>&1 && PY=python3 || PY=python
+                            $PY scripts/prepare_allure_metadata.py \
+                                --allure-results allure-results \
+                                --reports reports \
+                                --jenkins-url "${JENKINS_URL}" \
+                                --job-name "${JOB_NAME}" \
+                                --build-number "${BUILD_NUMBER}" \
+                                --build-url "${BUILD_URL}"
+                            $PY scripts/generate_ci_dashboard.py \
+                                --reports reports \
+                                --output reports/jenkins-dashboard.html \
+                                --job-name "${JOB_NAME}" \
+                                --build-number "${BUILD_NUMBER}" \
+                                --build-url "${BUILD_URL}" \
+                                --blue-url "${JENKINS_URL}blue/organizations/jenkins/${JOB_NAME}/detail/${JOB_NAME}/${BUILD_NUMBER}/pipeline/" \
+                                --allure-url "${BUILD_URL}allure/"
+                        '''
+                    } else {
+                        bat '''
+                            python scripts/prepare_allure_metadata.py --allure-results allure-results --reports reports --jenkins-url "%JENKINS_URL%" --job-name "%JOB_NAME%" --build-number "%BUILD_NUMBER%" --build-url "%BUILD_URL%"
+                            python scripts/generate_ci_dashboard.py --reports reports --output reports/jenkins-dashboard.html --job-name "%JOB_NAME%" --build-number "%BUILD_NUMBER%" --build-url "%BUILD_URL%" --blue-url "%JENKINS_URL%blue/organizations/jenkins/%JOB_NAME%/detail/%JOB_NAME%/%BUILD_NUMBER%/pipeline/" --allure-url "%BUILD_URL%allure/"
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Generate Allure Report') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            test -x /opt/allure/bin/allure
+                            /opt/allure/bin/allure generate allure-results -o allure-report --clean
+                            echo "Allure report generated at: allure-report/"
+                        '''
+                    } else {
+                        bat '''
+                            if not exist allure-results exit /b 1
+                            wsl /opt/allure/bin/allure generate allure-results -o allure-report --clean
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Publish Allure Report') {
+            steps {
+                allure(
+                    commandline: 'Allure',
+                    includeProperties: false,
+                    jdk: '',
+                    results: [[path: 'allure-results']]
+                )
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                publishHTML(
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'reports',
+                    reportFiles: 'jenkins-dashboard.html',
+                    reportName: 'CI Dashboard'
+                )
+                archiveArtifacts artifacts: 'allure-results/**, allure-report/**, reports/**, screenshots/**',
+                                 allowEmptyArchive: false
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                if (isUnix()) {
+                    sh 'docker rm -f "${TEST_UNIT_CONTAINER}" "${TEST_API_CONTAINER}" "${TEST_UI_CONTAINER}" 2>/dev/null || true'
+                    sh 'docker compose down --remove-orphans --volumes 2>/dev/null || true'
+                } else {
+                    bat 'docker rm -f "%TEST_UNIT_CONTAINER%" "%TEST_API_CONTAINER%" "%TEST_UI_CONTAINER%" 2>nul || ver>nul'
+                    bat 'docker compose down --remove-orphans --volumes 2>nul || ver>nul'
+                }
+            }
+            echo 'Pipeline finished. Environment cleaned up.'
+            echo 'Check archived allure-report/ for the full test report.'
+            script {
+                def blueOceanUrl = "${env.JENKINS_URL}blue/organizations/jenkins/${env.JOB_NAME}/detail/${env.JOB_NAME}/${env.BUILD_NUMBER}/pipeline"
+                def reportUrl = "${env.BUILD_URL}allure/"
+                def consoleUrl = "${env.BUILD_URL}console"
+                def subjectStatus = currentBuild.currentResult ?: 'UNKNOWN'
+
+                try {
+                    emailext(
+                        to: 'xjdjugking@gmail.com',
+                        replyTo: 'xjdjugking@gmail.com',
+                        subject: "[Mock CPE DevOps] ${subjectStatus} - Build #${env.BUILD_NUMBER}",
+                        mimeType: 'text/html',
+                        attachLog: true,
+                        compressLog: true,
+                        body: """
+                            <p>Mock CPE DevOps pipeline finished with status: <b>${subjectStatus}</b></p>
+                            <ul>
+                              <li><a href="${env.BUILD_URL}">Jenkins build</a></li>
+                              <li><a href="${blueOceanUrl}">Blue Ocean pipeline view</a></li>
+                              <li><a href="${consoleUrl}">Console output</a></li>
+                              <li><a href="${reportUrl}">Allure report</a></li>
+                            </ul>
+                            <p>Job: ${env.JOB_NAME}<br/>Build: #${env.BUILD_NUMBER}</p>
+                        """
+                    )
+                    echo 'Email notification requested for xjdjugking@gmail.com.'
+                } catch (err) {
+                    echo "Email notification failed or is not fully configured yet: ${err}"
+                }
+            }
+        }
+        success {
+            echo 'All stages passed: Mock CPE DevOps pipeline succeeded.'
+        }
+        failure {
+            echo 'Pipeline failed: review stage logs and archived artifacts.'
+        }
+    }
+}

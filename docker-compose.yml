@@ -7,6 +7,13 @@ services:
     container_name: mock-cpe
     ports:
       - "5000:5000"
+    environment:
+      MOCK_CPE_DEVICE_DELAY_SCALE: "${MOCK_CPE_DEVICE_DELAY_SCALE:-0}"
+      APP_BUILD_VERSION: "${APP_BUILD_VERSION:-local-dev}"
+      APP_BUILD_NUMBER: "${APP_BUILD_NUMBER:-}"
+      APP_BUILD_URL: "${APP_BUILD_URL:-}"
+      APP_FIRMWARE_BASELINE: "${APP_FIRMWARE_BASELINE:-}"
+      APP_FIRMWARE_TARGET: "${APP_FIRMWARE_TARGET:-}"
     volumes:
       - mock_cpe_data:/app/data
     networks:
@@ -24,6 +31,7 @@ services:
     shm_size: "2g"
     environment:
       SE_NODE_MAX_SESSIONS: "4"
+      SE_NODE_OVERRIDE_MAX_SESSIONS: "true"
       SE_NODE_SESSION_TIMEOUT: "300"
       SE_VNC_NO_PASSWORD: "1"
       SE_VNC_VIEW_ONLY: "1"
@@ -37,20 +45,16 @@ services:
   test-runner:
     build: .
     container_name: test-runner
-    depends_on:
-      mock-cpe:
-        condition: service_started
-      selenium:
-        condition: service_started
     environment:
       BASE_URL: "http://mock-cpe:5000"
       SELENIUM_REMOTE_URL: "http://selenium:4444/wd/hub"
       HEADLESS: "1"
+      MOCK_CPE_DEVICE_DELAY_SCALE: "${MOCK_CPE_DEVICE_DELAY_SCALE:-0}"
       PYTEST_ARGS: "${PYTEST_ARGS:-tests -v --tb=short}"
     volumes:
-      - ./reports:/app/reports
-      - ./allure-results:/app/allure-results
-      - ./screenshots:/app/screenshots
+      - test_reports:/app/reports
+      - test_allure_results:/app/allure-results
+      - test_screenshots:/app/screenshots
     networks:
       - test-net
     entrypoint: ["/bin/sh", "-c"]
@@ -58,8 +62,10 @@ services:
       - |
         echo "=== Running: pytest $${PYTEST_ARGS} ==="
         mkdir -p /app/reports /app/allure-results /app/screenshots
-        python -m pytest $${PYTEST_ARGS} || true
-        echo "=== Tests finished (exit code ignored for pipeline continuity) ==="
+        eval "python -m pytest $${PYTEST_ARGS}"
+        status=$$?
+        echo "=== Tests finished with exit code $${status} ==="
+        exit $${status}
 
 networks:
   test-net:
@@ -67,3 +73,6 @@ networks:
 
 volumes:
   mock_cpe_data:
+  test_reports:
+  test_allure_results:
+  test_screenshots:

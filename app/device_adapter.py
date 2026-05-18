@@ -1,3 +1,4 @@
+import os
 import random
 import time
 from abc import ABC, abstractmethod
@@ -24,22 +25,36 @@ class DeviceAdapter(ABC):
 
 
 class MockDeviceAdapter(DeviceAdapter):
-    def __init__(self, failure_rate=0.0):
+    def __init__(self, failure_rate=0.0, delay_scale=None):
         self._failure_rate = failure_rate
+        self._delay_scale = self._resolve_delay_scale(delay_scale)
         self._current_version = "2.1.0"  # default mock firmware version
 
+    @staticmethod
+    def _resolve_delay_scale(delay_scale) -> float:
+        if delay_scale is None:
+            delay_scale = os.environ.get("MOCK_CPE_DEVICE_DELAY_SCALE", "1")
+        try:
+            return max(0.0, float(delay_scale))
+        except (TypeError, ValueError):
+            return 1.0
+
+    def _sleep(self, seconds: float) -> None:
+        if self._delay_scale > 0:
+            time.sleep(seconds * self._delay_scale)
+
     def upload_firmware(self, path: str) -> bool:
-        time.sleep(0.4)
+        self._sleep(0.4)
         if not path:
             return False
         return True  # mock mode: no real file required
 
     def validate_firmware_package(self, path: str) -> bool:
-        time.sleep(0.3)
+        self._sleep(0.3)
         return bool(path)
 
     def trigger_upgrade(self, version: str) -> bool:
-        time.sleep(0.3)
+        self._sleep(0.3)
         if not version:
             return False
         if random.random() < self._failure_rate:
@@ -50,13 +65,13 @@ class MockDeviceAdapter(DeviceAdapter):
         return True
 
     def reboot_device(self) -> bool:
-        time.sleep(1.0)
+        self._sleep(1.0)
         if random.random() < self._failure_rate:
             return False  # 模拟故障注入
         return True
 
     def wait_until_online(self, timeout_seconds: int = 30) -> bool:
-        time.sleep(0.8)
+        self._sleep(0.8)
         if random.random() < self._failure_rate:
             return False  # 模拟故障注入
         return True

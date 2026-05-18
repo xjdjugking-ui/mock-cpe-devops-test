@@ -75,7 +75,7 @@ class GatewayService:
         else:
             self.repo.add_activity('固件校验', f"固件 {filename} 格式非法，已拒绝")
             return {'status': 'rejected', 'version': None,
-                    'message': f'固件名格式非法。合法格式：cpe_gateway_vX.Y.Z.bin'}
+                    'message': 'rejected error: 固件名格式非法。合法格式：cpe_gateway_vX.Y.Z.bin'}
 
     # ------------------------------------------------------------------
     # Diagnostics
